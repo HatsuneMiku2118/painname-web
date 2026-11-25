@@ -1,0 +1,50 @@
+<view class="page">
+  <step-bar current="{{1}}" done1="{{hasRecord}}" done2="{{hasReport}}" done3="{{hasLogs}}" enabled2="{{canUnderstand}}" enabled3="{{hasReport}}" />
+
+  <view class="hero">
+    <view class="eyebrow">不是给人贴标签，而是给痛苦一个名字</view>
+    <view class="h1">最近，有什么事情</view>
+    <view class="h1 h1-accent">让你感到难受？</view>
+    <view class="lede">
+      <text class="lede-line">你的痛苦，值得被认真理解。</text>
+      <text class="lede-line">不用组织语言，想到哪里，就写到哪里。</text>
+    </view>
+  </view>
+
+  <view class="resume" a:if="{{hasRecord}}">
+    <view class="resume-label">上次的记录还留在这里</view>
+    <view class="resume-text">{{resumeText}}</view>
+    <view class="row">
+      <view class="btn btn-ghost" hover-class="btn-ghost-hover" onTap="onContinue">{{continueLabel}}</view>
+      <view class="btn btn-quiet" onTap="onRestart">开始新的描述</view>
+    </view>
+  </view>
+
+  <view class="card composer">
+    <textarea
+      class="composer-input"
+      value="{{raw}}"
+      onInput="onInput"
+      maxlength="1200"
+      show-count="{{false}}"
+      placeholder="比如：他几个小时没有回我消息，我一直在看手机，脑子里反复想，是不是自己做错了什么……"
+    ></textarea>
+    <view class="composer-foot">
+      <text class="counter">{{count}} / 1200</text>
+      <view class="btn btn-primary" hover-class="btn-primary-hover" onTap="onSubmit">看看这是什么 →</view>
+    </view>
+  </view>
+
+  <view class="chips-title">不知道从哪开始？选一个更接近你的情境，可以再改。</view>
+  <view class="chips">
+    <view class="chip" hover-class="chip-hover" a:for="{{chips}}" a:key="label" data-text="{{item.text}}" onTap="onChip">{{item.label}}</view>
+  </view>
+
+  <view class="disclaimer">我们不给你贴人格标签，也不做心理诊断。档案与记录保存在本机，随时可以删除；使用模型增强时，输入文本会发送给模型服务商处理。</view>
+  <view class="mode-note">{{aiLabel}}</view>
+
+  <view class="row">
+    <view class="btn btn-quiet" onTap="onPrivacy">数据说明</view>
+    <view class="btn btn-quiet" onTap="onArchive">我的档案</view>
+  </view>
+</view>

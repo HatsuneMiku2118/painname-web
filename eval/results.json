@@ -1,0 +1,1501 @@
+{
+  "generated_at": "2026-11-25 22:07:50",
+  "api": "http://127.0.0.1:8123",
+  "matching": {
+    "total": 122,
+    "errors": 0,
+    "positives": 64,
+    "negatives": 58,
+    "top1": 62,
+    "top3": 64,
+    "top1_rate": 96.9,
+    "top3_rate": 100.0,
+    "mrr": 0.982,
+    "refusal": 57,
+    "refusal_rate": 98.3,
+    "false_positive": 1,
+    "false_positive_rate": 1.7,
+    "hard_negative": {
+      "n": 30,
+      "refusal": 30,
+      "refusal_rate": 100.0
+    },
+    "corpus_negative": {
+      "n": 20,
+      "refusal": 19,
+      "refusal_rate": 95.0
+    },
+    "simple_negative": {
+      "n": 8,
+      "refusal": 8,
+      "refusal_rate": 100.0
+    },
+    "avg_candidates": 0.97,
+    "max_candidates": 3,
+    "over4": 0,
+    "latency_p50": 5.0,
+    "latency_p90": 9.74
+  },
+  "details": [
+    {
+      "id": "m01",
+      "gold": "rumination",
+      "expect": "match",
+      "candidates": [
+        "rumination"
+      ],
+      "seconds": 3.63,
+      "error": null
+    },
+    {
+      "id": "m02",
+      "gold": "rumination",
+      "expect": "match",
+      "candidates": [
+        "rumination"
+      ],
+      "seconds": 4.59,
+      "error": null
+    },
+    {
+      "id": "m03",
+      "gold": "attachment_anxiety",
+      "expect": "match",
+      "candidates": [
+        "attachment_anxiety",
+        "rejection_sensitivity"
+      ],
+      "seconds": 8.39,
+      "error": null
+    },
+    {
+      "id": "m04",
+      "gold": "attachment_anxiety",
+      "expect": "match",
+      "candidates": [
+        "attachment_anxiety",
+        "rejection_sensitivity"
+      ],
+      "seconds": 8.63,
+      "error": null
+    },
+    {
+      "id": "m05",
+      "gold": "rejection_sensitivity",
+      "expect": "match",
+      "candidates": [
+        "rejection_sensitivity",
+        "attachment_anxiety",
+        "relational_uncertainty"
+      ],
+      "seconds": 8.2,
+      "error": null
+    },
+    {
+      "id": "m06",
+      "gold": "rejection_sensitivity",
+      "expect": "match",
+      "candidates": [
+        "rejection_sensitivity",
+        "demand_withdraw"
+      ],
+      "seconds": 7.41,
+      "error": null
+    },
+    {
+      "id": "m07",
+      "gold": "relational_uncertainty",
+      "expect": "match",
+      "candidates": [
+        "relational_uncertainty",
+        "rejection_sensitivity",
+        "rumination"
+      ],
+      "seconds": 11.94,
+      "error": null
+    },
+    {
+      "id": "m08",
+      "gold": "relational_uncertainty",
+      "expect": "match",
+      "candidates": [
+        "relational_uncertainty"
+      ],
+      "seconds": 3.4,
+      "error": null
+    },
+    {
+      "id": "m09",
+      "gold": "self_blame",
+      "expect": "match",
+      "candidates": [
+        "self_blame"
+      ],
+      "seconds": 5.54,
+      "error": null
+    },
+    {
+      "id": "m10",
+      "gold": "self_blame",
+      "expect": "match",
+      "candidates": [
+        "self_blame"
+      ],
+      "seconds": 3.89,
+      "error": null
+    },
+    {
+      "id": "m11",
+      "gold": "breakup_identity",
+      "expect": "match",
+      "candidates": [
+        "breakup_identity"
+      ],
+      "seconds": 5.0,
+      "error": null
+    },
+    {
+      "id": "m12",
+      "gold": "breakup_identity",
+      "expect": "match",
+      "candidates": [
+        "breakup_identity",
+        "relational_uncertainty"
+      ],
+      "seconds": 9.53,
+      "error": null
+    },
+    {
+      "id": "m13",
+      "gold": "emotional_granularity",
+      "expect": "match",
+      "candidates": [
+        "emotional_granularity"
+      ],
+      "seconds": 3.7,
+      "error": null
+    },
+    {
+      "id": "m14",
+      "gold": "emotional_granularity",
+      "expect": "match",
+      "candidates": [
+        "emotional_granularity"
+      ],
+      "seconds": 5.63,
+      "error": null
+    },
+    {
+      "id": "m15",
+      "gold": "demand_withdraw",
+      "expect": "match",
+      "candidates": [
+        "demand_withdraw",
+        "rumination"
+      ],
+      "seconds": 6.34,
+      "error": null
+    },
+    {
+      "id": "m16",
+      "gold": "demand_withdraw",
+      "expect": "match",
+      "candidates": [
+        "demand_withdraw",
+        "attachment_anxiety",
+        "rejection_sensitivity"
+      ],
+      "seconds": 9.71,
+      "error": null
+    },
+    {
+      "id": "m17",
+      "gold": "self_silencing",
+      "expect": "match",
+      "candidates": [
+        "self_silencing",
+        "self_blame"
+      ],
+      "seconds": 7.9,
+      "error": null
+    },
+    {
+      "id": "m18",
+      "gold": "self_silencing",
+      "expect": "match",
+      "candidates": [
+        "self_silencing",
+        "breakup_identity"
+      ],
+      "seconds": 8.68,
+      "error": null
+    },
+    {
+      "id": "p01",
+      "gold": "rumination",
+      "expect": "match",
+      "candidates": [
+        "rumination"
+      ],
+      "seconds": 3.95,
+      "error": null
+    },
+    {
+      "id": "p02",
+      "gold": "rumination",
+      "expect": "match",
+      "candidates": [
+        "rumination",
+        "rejection_sensitivity",
+        "self_blame"
+      ],
+      "seconds": 9.77,
+      "error": null
+    },
+    {
+      "id": "p03",
+      "gold": "attachment_anxiety",
+      "expect": "match",
+      "candidates": [
+        "attachment_anxiety",
+        "rejection_sensitivity",
+        "relational_uncertainty"
+      ],
+      "seconds": 8.79,
+      "error": null
+    },
+    {
+      "id": "p04",
+      "gold": "attachment_anxiety",
+      "expect": "match",
+      "candidates": [
+        "worry",
+        "rejection_sensitivity",
+        "attachment_anxiety"
+      ],
+      "seconds": 5.78,
+      "error": null
+    },
+    {
+      "id": "p05",
+      "gold": "rejection_sensitivity",
+      "expect": "match",
+      "candidates": [
+        "rejection_sensitivity",
+        "attachment_anxiety"
+      ],
+      "seconds": 6.72,
+      "error": null
+    },
+    {
+      "id": "p06",
+      "gold": "relational_uncertainty",
+      "expect": "match",
+      "candidates": [
+        "relational_uncertainty",
+        "rumination",
+        "demand_withdraw"
+      ],
+      "seconds": 12.2,
+      "error": null
+    },
+    {
+      "id": "p07",
+      "gold": "self_blame",
+      "expect": "match",
+      "candidates": [
+        "self_blame",
+        "attachment_anxiety"
+      ],
+      "seconds": 9.74,
+      "error": null
+    },
+    {
+      "id": "p08",
+      "gold": "breakup_identity",
+      "expect": "match",
+      "candidates": [
+        "breakup_identity",
+        "emotional_granularity"
+      ],
+      "seconds": 8.99,
+      "error": null
+    },
+    {
+      "id": "p09",
+      "gold": "emotional_granularity",
+      "expect": "match",
+      "candidates": [
+        "emotional_granularity"
+      ],
+      "seconds": 9.28,
+      "error": null
+    },
+    {
+      "id": "p10",
+      "gold": "demand_withdraw",
+      "expect": "match",
+      "candidates": [
+        "demand_withdraw",
+        "rejection_sensitivity",
+        "attachment_anxiety"
+      ],
+      "seconds": 12.23,
+      "error": null
+    },
+    {
+      "id": "p11",
+      "gold": "self_silencing",
+      "expect": "match",
+      "candidates": [
+        "self_silencing",
+        "self_blame"
+      ],
+      "seconds": 14.53,
+      "error": null
+    },
+    {
+      "id": "p12",
+      "gold": "self_silencing",
+      "expect": "match",
+      "candidates": [
+        "self_silencing"
+      ],
+      "seconds": 3.75,
+      "error": null
+    },
+    {
+      "id": "n01",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.11,
+      "error": null
+    },
+    {
+      "id": "n02",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 4.63,
+      "error": null
+    },
+    {
+      "id": "n03",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 2.26,
+      "error": null
+    },
+    {
+      "id": "n04",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 2.44,
+      "error": null
+    },
+    {
+      "id": "n05",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.66,
+      "error": null
+    },
+    {
+      "id": "n06",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 4.32,
+      "error": null
+    },
+    {
+      "id": "n07",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.73,
+      "error": null
+    },
+    {
+      "id": "n08",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.41,
+      "error": null
+    },
+    {
+      "id": "h01",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 5.81,
+      "error": null
+    },
+    {
+      "id": "h02",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 4.3,
+      "error": null
+    },
+    {
+      "id": "h03",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 1.17,
+      "error": null
+    },
+    {
+      "id": "h04",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 5.36,
+      "error": null
+    },
+    {
+      "id": "h05",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 0.92,
+      "error": null
+    },
+    {
+      "id": "h06",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 4.3,
+      "error": null
+    },
+    {
+      "id": "h07",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 4.09,
+      "error": null
+    },
+    {
+      "id": "h08",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.43,
+      "error": null
+    },
+    {
+      "id": "h09",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 2.98,
+      "error": null
+    },
+    {
+      "id": "h10",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 4.36,
+      "error": null
+    },
+    {
+      "id": "c01",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 2.79,
+      "error": null
+    },
+    {
+      "id": "c02",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.49,
+      "error": null
+    },
+    {
+      "id": "c03",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 4.76,
+      "error": null
+    },
+    {
+      "id": "c04",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.05,
+      "error": null
+    },
+    {
+      "id": "c05",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 1.53,
+      "error": null
+    },
+    {
+      "id": "c06",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 5.37,
+      "error": null
+    },
+    {
+      "id": "c07",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 2.78,
+      "error": null
+    },
+    {
+      "id": "c08",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 6.03,
+      "error": null
+    },
+    {
+      "id": "m19",
+      "gold": "rumination",
+      "expect": "match",
+      "candidates": [
+        "rumination"
+      ],
+      "seconds": 4.43,
+      "error": null
+    },
+    {
+      "id": "m20",
+      "gold": "rumination",
+      "expect": "match",
+      "candidates": [
+        "rumination"
+      ],
+      "seconds": 5.62,
+      "error": null
+    },
+    {
+      "id": "m21",
+      "gold": "rejection_sensitivity",
+      "expect": "match",
+      "candidates": [
+        "rejection_sensitivity",
+        "rumination",
+        "relational_uncertainty"
+      ],
+      "seconds": 13.43,
+      "error": null
+    },
+    {
+      "id": "m22",
+      "gold": "attachment_anxiety",
+      "expect": "match",
+      "candidates": [
+        "attachment_anxiety",
+        "worry"
+      ],
+      "seconds": 8.52,
+      "error": null
+    },
+    {
+      "id": "m23",
+      "gold": "rejection_sensitivity",
+      "expect": "match",
+      "candidates": [
+        "rejection_sensitivity",
+        "self_blame"
+      ],
+      "seconds": 7.37,
+      "error": null
+    },
+    {
+      "id": "m24",
+      "gold": "rejection_sensitivity",
+      "expect": "match",
+      "candidates": [
+        "self_blame",
+        "rejection_sensitivity"
+      ],
+      "seconds": 7.59,
+      "error": null
+    },
+    {
+      "id": "m25",
+      "gold": "relational_uncertainty",
+      "expect": "match",
+      "candidates": [
+        "relational_uncertainty"
+      ],
+      "seconds": 5.7,
+      "error": null
+    },
+    {
+      "id": "m26",
+      "gold": "relational_uncertainty",
+      "expect": "match",
+      "candidates": [
+        "relational_uncertainty",
+        "rejection_sensitivity",
+        "self_blame"
+      ],
+      "seconds": 13.4,
+      "error": null
+    },
+    {
+      "id": "m27",
+      "gold": "self_blame",
+      "expect": "match",
+      "candidates": [
+        "self_blame"
+      ],
+      "seconds": 6.15,
+      "error": null
+    },
+    {
+      "id": "m28",
+      "gold": "self_blame",
+      "expect": "match",
+      "candidates": [
+        "self_blame"
+      ],
+      "seconds": 5.92,
+      "error": null
+    },
+    {
+      "id": "m29",
+      "gold": "breakup_identity",
+      "expect": "match",
+      "candidates": [
+        "breakup_identity",
+        "rumination",
+        "relational_uncertainty"
+      ],
+      "seconds": 11.52,
+      "error": null
+    },
+    {
+      "id": "m30",
+      "gold": "breakup_identity",
+      "expect": "match",
+      "candidates": [
+        "breakup_identity"
+      ],
+      "seconds": 6.41,
+      "error": null
+    },
+    {
+      "id": "m31",
+      "gold": "emotional_granularity",
+      "expect": "match",
+      "candidates": [
+        "emotional_granularity"
+      ],
+      "seconds": 4.15,
+      "error": null
+    },
+    {
+      "id": "m32",
+      "gold": "emotional_granularity",
+      "expect": "match",
+      "candidates": [
+        "emotional_granularity"
+      ],
+      "seconds": 4.2,
+      "error": null
+    },
+    {
+      "id": "m33",
+      "gold": "demand_withdraw",
+      "expect": "match",
+      "candidates": [
+        "demand_withdraw",
+        "rejection_sensitivity",
+        "attachment_anxiety"
+      ],
+      "seconds": 10.0,
+      "error": null
+    },
+    {
+      "id": "m34",
+      "gold": "demand_withdraw",
+      "expect": "match",
+      "candidates": [
+        "demand_withdraw",
+        "rumination"
+      ],
+      "seconds": 6.79,
+      "error": null
+    },
+    {
+      "id": "m35",
+      "gold": "self_silencing",
+      "expect": "match",
+      "candidates": [
+        "self_silencing",
+        "attachment_anxiety",
+        "rejection_sensitivity"
+      ],
+      "seconds": 9.8,
+      "error": null
+    },
+    {
+      "id": "m36",
+      "gold": "self_silencing",
+      "expect": "match",
+      "candidates": [
+        "self_silencing",
+        "emotional_granularity"
+      ],
+      "seconds": 7.29,
+      "error": null
+    },
+    {
+      "id": "m37",
+      "gold": "worry",
+      "expect": "match",
+      "candidates": [
+        "worry"
+      ],
+      "seconds": 5.56,
+      "error": null
+    },
+    {
+      "id": "m38",
+      "gold": "worry",
+      "expect": "match",
+      "candidates": [
+        "worry"
+      ],
+      "seconds": 7.03,
+      "error": null
+    },
+    {
+      "id": "m39",
+      "gold": "shame",
+      "expect": "match",
+      "candidates": [
+        "shame",
+        "rumination",
+        "self_blame"
+      ],
+      "seconds": 11.94,
+      "error": null
+    },
+    {
+      "id": "m40",
+      "gold": "shame",
+      "expect": "match",
+      "candidates": [
+        "shame",
+        "rejection_sensitivity"
+      ],
+      "seconds": 6.59,
+      "error": null
+    },
+    {
+      "id": "m41",
+      "gold": "loneliness",
+      "expect": "match",
+      "candidates": [
+        "loneliness",
+        "rejection_sensitivity"
+      ],
+      "seconds": 6.21,
+      "error": null
+    },
+    {
+      "id": "m42",
+      "gold": "loneliness",
+      "expect": "match",
+      "candidates": [
+        "loneliness",
+        "rumination",
+        "rejection_sensitivity"
+      ],
+      "seconds": 8.45,
+      "error": null
+    },
+    {
+      "id": "m43",
+      "gold": "counterfactual_regret",
+      "expect": "match",
+      "candidates": [
+        "counterfactual_regret",
+        "rumination"
+      ],
+      "seconds": 8.75,
+      "error": null
+    },
+    {
+      "id": "m44",
+      "gold": "counterfactual_regret",
+      "expect": "match",
+      "candidates": [
+        "counterfactual_regret"
+      ],
+      "seconds": 6.27,
+      "error": null
+    },
+    {
+      "id": "m45",
+      "gold": "emotional_exhaustion",
+      "expect": "match",
+      "candidates": [
+        "emotional_exhaustion",
+        "self_blame"
+      ],
+      "seconds": 9.0,
+      "error": null
+    },
+    {
+      "id": "m46",
+      "gold": "emotional_exhaustion",
+      "expect": "match",
+      "candidates": [
+        "emotional_exhaustion"
+      ],
+      "seconds": 4.0,
+      "error": null
+    },
+    {
+      "id": "m47",
+      "gold": "self_silencing",
+      "expect": "match",
+      "candidates": [
+        "self_silencing"
+      ],
+      "seconds": 8.31,
+      "error": null
+    },
+    {
+      "id": "m48",
+      "gold": "shame",
+      "expect": "match",
+      "candidates": [
+        "shame",
+        "self_blame"
+      ],
+      "seconds": 9.13,
+      "error": null
+    },
+    {
+      "id": "m49",
+      "gold": "loneliness",
+      "expect": "match",
+      "candidates": [
+        "loneliness",
+        "attachment_anxiety"
+      ],
+      "seconds": 6.52,
+      "error": null
+    },
+    {
+      "id": "m50",
+      "gold": "counterfactual_regret",
+      "expect": "match",
+      "candidates": [
+        "counterfactual_regret"
+      ],
+      "seconds": 7.87,
+      "error": null
+    },
+    {
+      "id": "m51",
+      "gold": "emotional_exhaustion",
+      "expect": "match",
+      "candidates": [
+        "emotional_exhaustion"
+      ],
+      "seconds": 5.22,
+      "error": null
+    },
+    {
+      "id": "m52",
+      "gold": "emotional_granularity",
+      "expect": "match",
+      "candidates": [
+        "emotional_granularity"
+      ],
+      "seconds": 6.7,
+      "error": null
+    },
+    {
+      "id": "k01",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 2.87,
+      "error": null
+    },
+    {
+      "id": "k02",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.28,
+      "error": null
+    },
+    {
+      "id": "k03",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 5.55,
+      "error": null
+    },
+    {
+      "id": "k04",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 4.11,
+      "error": null
+    },
+    {
+      "id": "k05",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 1.27,
+      "error": null
+    },
+    {
+      "id": "k06",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.46,
+      "error": null
+    },
+    {
+      "id": "k07",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 1.24,
+      "error": null
+    },
+    {
+      "id": "k08",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.78,
+      "error": null
+    },
+    {
+      "id": "k09",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 4.65,
+      "error": null
+    },
+    {
+      "id": "k10",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 16.06,
+      "error": null
+    },
+    {
+      "id": "k11",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.3,
+      "error": null
+    },
+    {
+      "id": "k12",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.07,
+      "error": null
+    },
+    {
+      "id": "k13",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 4.63,
+      "error": null
+    },
+    {
+      "id": "k14",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 4.3,
+      "error": null
+    },
+    {
+      "id": "k15",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 0.82,
+      "error": null
+    },
+    {
+      "id": "k16",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 4.01,
+      "error": null
+    },
+    {
+      "id": "k17",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.58,
+      "error": null
+    },
+    {
+      "id": "k18",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 1.27,
+      "error": null
+    },
+    {
+      "id": "k19",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 0.94,
+      "error": null
+    },
+    {
+      "id": "k20",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 4.44,
+      "error": null
+    },
+    {
+      "id": "x01",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 1.43,
+      "error": null
+    },
+    {
+      "id": "x02",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 0.9,
+      "error": null
+    },
+    {
+      "id": "x03",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 2.99,
+      "error": null
+    },
+    {
+      "id": "x04",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 4.02,
+      "error": null
+    },
+    {
+      "id": "x05",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [
+        "rumination",
+        "self_blame"
+      ],
+      "seconds": 6.07,
+      "error": null
+    },
+    {
+      "id": "x06",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.0,
+      "error": null
+    },
+    {
+      "id": "x07",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.43,
+      "error": null
+    },
+    {
+      "id": "x08",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.19,
+      "error": null
+    },
+    {
+      "id": "x09",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 0.91,
+      "error": null
+    },
+    {
+      "id": "x10",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 9.9,
+      "error": null
+    },
+    {
+      "id": "x11",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 3.25,
+      "error": null
+    },
+    {
+      "id": "x12",
+      "gold": "__none__",
+      "expect": "none",
+      "candidates": [],
+      "seconds": 2.7,
+      "error": null
+    }
+  ],
+  "reports": [
+    {
+      "conceptId": "rumination",
+      "ok": true,
+      "error": null,
+      "explanation": 2,
+      "mechanism": 1,
+      "cycle": 4,
+      "links": 1,
+      "summary_chars": 49,
+      "banned_hits": [],
+      "citation_hits": [],
+      "seconds": 32.49
+    },
+    {
+      "conceptId": "attachment_anxiety",
+      "ok": true,
+      "error": null,
+      "explanation": 2,
+      "mechanism": 2,
+      "cycle": 5,
+      "links": 1,
+      "summary_chars": 45,
+      "banned_hits": [],
+      "citation_hits": [],
+      "seconds": 29.75
+    },
+    {
+      "conceptId": "self_blame",
+      "ok": true,
+      "error": null,
+      "explanation": 2,
+      "mechanism": 1,
+      "cycle": 5,
+      "links": 1,
+      "summary_chars": 46,
+      "banned_hits": [],
+      "citation_hits": [],
+      "seconds": 30.27
+    },
+    {
+      "conceptId": "breakup_identity",
+      "ok": true,
+      "error": null,
+      "explanation": 2,
+      "mechanism": 1,
+      "cycle": 4,
+      "links": 1,
+      "summary_chars": 74,
+      "banned_hits": [],
+      "citation_hits": [],
+      "seconds": 22.64
+    },
+    {
+      "conceptId": "emotional_granularity",
+      "ok": true,
+      "error": null,
+      "explanation": 2,
+      "mechanism": 2,
+      "cycle": 5,
+      "links": 1,
+      "summary_chars": 39,
+      "banned_hits": [],
+      "citation_hits": [],
+      "seconds": 24.7
+    },
+    {
+      "conceptId": "demand_withdraw",
+      "ok": true,
+      "error": null,
+      "explanation": 2,
+      "mechanism": 1,
+      "cycle": 5,
+      "links": 1,
+      "summary_chars": 60,
+      "banned_hits": [],
+      "citation_hits": [],
+      "seconds": 23.42
+    }
+  ],
+  "followups": {
+    "summary": {
+      "total": 12,
+      "errors": 0,
+      "should_n": 6,
+      "no_n": 6,
+      "recall": 6,
+      "recall_rate": 100.0,
+      "false": 0,
+      "false_rate": 0.0
+    },
+    "details": [
+      {
+        "id": "f01",
+        "should_ask": true,
+        "asked": true,
+        "count": 2,
+        "seconds": 7.15,
+        "error": null
+      },
+      {
+        "id": "f02",
+        "should_ask": true,
+        "asked": true,
+        "count": 2,
+        "seconds": 10.89,
+        "error": null
+      },
+      {
+        "id": "f03",
+        "should_ask": true,
+        "asked": true,
+        "count": 2,
+        "seconds": 10.95,
+        "error": null
+      },
+      {
+        "id": "f04",
+        "should_ask": true,
+        "asked": true,
+        "count": 2,
+        "seconds": 4.94,
+        "error": null
+      },
+      {
+        "id": "f05",
+        "should_ask": true,
+        "asked": true,
+        "count": 2,
+        "seconds": 6.25,
+        "error": null
+      },
+      {
+        "id": "f06",
+        "should_ask": true,
+        "asked": true,
+        "count": 2,
+        "seconds": 12.29,
+        "error": null
+      },
+      {
+        "id": "f07",
+        "should_ask": false,
+        "asked": false,
+        "count": 0,
+        "seconds": 7.73,
+        "error": null
+      },
+      {
+        "id": "f08",
+        "should_ask": false,
+        "asked": false,
+        "count": 0,
+        "seconds": 10.78,
+        "error": null
+      },
+      {
+        "id": "f09",
+        "should_ask": false,
+        "asked": false,
+        "count": 0,
+        "seconds": 4.35,
+        "error": null
+      },
+      {
+        "id": "f10",
+        "should_ask": false,
+        "asked": false,
+        "count": 0,
+        "seconds": 4.35,
+        "error": null
+      },
+      {
+        "id": "f11",
+        "should_ask": false,
+        "asked": false,
+        "count": 0,
+        "seconds": 9.01,
+        "error": null
+      },
+      {
+        "id": "f12",
+        "should_ask": false,
+        "asked": false,
+        "count": 0,
+        "seconds": 13.94,
+        "error": null
+      }
+    ]
+  },
+  "coverage": [
+    {
+      "id": "rumination",
+      "name": "反刍思维",
+      "signals": 4,
+      "words": 26,
+      "review_status": "pending_review"
+    },
+    {
+      "id": "attachment_anxiety",
+      "name": "依恋焦虑",
+      "signals": 4,
+      "words": 42,
+      "review_status": "pending_review"
+    },
+    {
+      "id": "rejection_sensitivity",
+      "name": "拒绝敏感性",
+      "signals": 3,
+      "words": 27,
+      "review_status": "pending_review"
+    },
+    {
+      "id": "relational_uncertainty",
+      "name": "关系不确定性",
+      "signals": 3,
+      "words": 21,
+      "review_status": "pending_review"
+    },
+    {
+      "id": "self_blame",
+      "name": "自我责备",
+      "signals": 3,
+      "words": 25,
+      "review_status": "pending_review"
+    },
+    {
+      "id": "breakup_identity",
+      "name": "分手后的自我概念模糊",
+      "signals": 3,
+      "words": 18,
+      "review_status": "pending_review"
+    },
+    {
+      "id": "emotional_granularity",
+      "name": "情绪粒度偏低",
+      "signals": 3,
+      "words": 18,
+      "review_status": "pending_review"
+    },
+    {
+      "id": "demand_withdraw",
+      "name": "要求—退缩循环",
+      "signals": 4,
+      "words": 19,
+      "review_status": "pending_review"
+    },
+    {
+      "id": "self_silencing",
+      "name": "关系中的自我沉默",
+      "signals": 4,
+      "words": 36,
+      "review_status": "pending_review"
+    },
+    {
+      "id": "worry",
+      "name": "担忧",
+      "signals": 4,
+      "words": 20,
+      "review_status": "pending_review"
+    },
+    {
+      "id": "shame",
+      "name": "羞耻感",
+      "signals": 4,
+      "words": 34,
+      "review_status": "pending_review"
+    },
+    {
+      "id": "loneliness",
+      "name": "孤独感",
+      "signals": 4,
+      "words": 21,
+      "review_status": "pending_review"
+    },
+    {
+      "id": "counterfactual_regret",
+      "name": "反事实后悔",
+      "signals": 4,
+      "words": 21,
+      "review_status": "pending_review"
+    },
+    {
+      "id": "emotional_exhaustion",
+      "name": "情绪耗竭",
+      "signals": 4,
+      "words": 23,
+      "review_status": "pending_review"
+    }
+  ],
+  "scenarios": {
+    "total": 66,
+    "translated": 64,
+    "by_source": {
+      "MELD": 18,
+      "GoEmotions": 24,
+      "EmoBank": 12,
+      "CPM/tec": 10,
+      "CPM/reman": 2
+    }
+  }
+}

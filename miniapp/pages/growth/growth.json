@@ -1,0 +1,6 @@
+{
+  "defaultTitle": "行动与成长",
+  "usingComponents": {
+    "step-bar": "/components/step-bar/index"
+  }
+}

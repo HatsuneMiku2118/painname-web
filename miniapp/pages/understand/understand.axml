@@ -1,0 +1,97 @@
+<view class="page">
+  <step-bar current="{{2}}" done1="{{true}}" done2="{{hasReport}}" done3="{{false}}" enabled2="{{true}}" enabled3="{{hasReport}}" />
+
+  <block a:if="{{!hasReport}}">
+    <view class="kicker">板块二 · 理解与探索</view>
+    <view class="report-head-title">你想理解到哪一层？</view>
+    <view class="report-head-sub">这里不会再问你已经说过的事。你在板块一写下的内容会被直接带过来。</view>
+
+    <view
+      class="depth-card {{depth === item.key ? 'depth-card-active' : ''}}"
+      a:for="{{depths}}"
+      a:key="key"
+      data-depth="{{item.key}}"
+      onTap="onDepth"
+    >
+      <view class="depth-key {{depth === item.key ? 'depth-key-active' : ''}}">{{item.letter}}</view>
+      <view class="depth-body">
+        <view class="depth-title">{{item.title}}</view>
+        <view class="depth-desc">{{item.desc}}</view>
+      </view>
+    </view>
+
+    <view class="card" a:if="{{needsOrigins}}">
+      <view class="sub-title">可选：如果你愿意，可以先补充一点更早的经历</view>
+      <view class="origins-hint">没有补充也完全可以。我们不会替你推断童年、家庭或过去的关系。</view>
+      <textarea
+        class="origins-input"
+        auto-height
+        maxlength="600"
+        value="{{originsText}}"
+        onInput="onOrigins"
+        placeholder="比如：小时候家里不太谈情绪，我习惯了有事先自己消化……"
+      ></textarea>
+    </view>
+
+    <view class="row">
+      <view class="btn btn-primary" hover-class="btn-primary-hover" onTap="onGenerate">生成我的理解</view>
+      <view class="btn btn-quiet" onTap="onBackIdentify">回到板块一看看</view>
+    </view>
+
+    <view class="disclaimer">报告中会标出哪些是你提到的事实、哪些只是基于理论的可能解释，以及哪些目前还不知道。</view>
+  </block>
+
+  <block a:if="{{hasReport}}">
+    <view class="kicker">板块二 · 理解与探索</view>
+    <view class="report-head-title">{{reportView.title}}</view>
+    <view class="report-head-sub" a:if="{{reportView.subtitle}}">{{reportView.subtitle}}</view>
+    <view class="report-head-meta">{{reportView.meta}}</view>
+
+    <view class="banner" a:if="{{reportView.banner}}">{{reportView.banner}}</view>
+
+    <view class="card report-card">
+      <view
+        class="report-section {{index === 0 ? 'report-section-first' : ''}}"
+        a:for="{{reportView.sections}}"
+        a:key="title"
+      >
+        <view class="sec-title">
+          <text class="sec-index">{{item.index}}</text>
+          <text>{{item.title}}</text>
+        </view>
+        <rich-text class="rich" nodes="{{item.html}}"></rich-text>
+      </view>
+
+      <view class="report-section">
+        <view class="sec-title">
+          <text class="sec-index">{{reportView.sourcesIndex}}</text>
+          <text>理论依据</text>
+        </view>
+        <view class="acc acc-flush" onTap="onToggleSources">
+          <view class="acc-head">
+            <text>查看概念来源与证据范围</text>
+            <text class="acc-icon">{{showSources ? '−' : '+'}}</text>
+          </view>
+          <view class="acc-body" a:if="{{showSources}}">
+            <block a:if="{{reportView.sources.length}}">
+              <view class="source-item" a:for="{{reportView.sources}}" a:key="title">
+                <view class="source-title">{{item.authors}} ({{item.year}}). {{item.title}}</view>
+                <view class="source-venue">{{item.venue}}</view>
+                <view class="source-note" a:if="{{item.note}}">{{item.note}}</view>
+              </view>
+              <view class="source-limit">证据范围与局限：{{reportView.limits}}</view>
+            </block>
+            <view class="empty" a:if="{{!reportView.sources.length}}">这次没有引用具体文献，因为还没有匹配到可追溯的概念条目。这比引用一个不确定的来源更诚实。</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="row">
+      <view class="btn btn-primary" hover-class="btn-primary-hover" onTap="onGrowth">看看我可以往哪里走</view>
+      <view class="btn btn-quiet" onTap="onReset">换一个探索深度</view>
+    </view>
+
+    <view class="disclaimer">这份报告基于你提供的描述与概念库中的公开知识，不构成诊断，也不是对你或对方的定论。对方当时的想法，从这里无法得知。</view>
+  </block>
+</view>

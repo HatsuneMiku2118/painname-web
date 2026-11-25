@@ -1,0 +1,13 @@
+llm.key
+.env
+.env.local
+config.local.*
+*.bak
+
+node_modules/
+__pycache__/
+*.pyc
+
+# 工具与运行产生的本地目录
+.screenshots/
+.trae-html-share-packages/

@@ -1,0 +1,100 @@
+<view class="page">
+  <step-bar current="{{3}}" done1="{{true}}" done2="{{true}}" done3="{{hasLogs}}" enabled2="{{true}}" enabled3="{{true}}" />
+
+  <view class="kicker">板块三 · 行动与成长</view>
+  <view class="report-head-title">如果愿意，可以从这里开始</view>
+  <view class="report-head-sub">{{hint}}这些是邀请，不是任务清单。你可以只看看，也可以暂时什么都不选。</view>
+
+  <view class="dir-card {{item.selected ? 'dir-card-active' : ''}}" a:for="{{directions}}" a:key="id">
+    <view class="dir-head">
+      <text class="dir-num">0{{index + 1}}</text>
+      <text class="dir-title">{{item.title}}</text>
+      <text class="badge" a:if="{{item.selected}}">当前方向</text>
+    </view>
+    <view class="dir-desc">{{item.description}}</view>
+    <view class="scene">
+      <text class="scene-label">可能的一个场景</text>
+      <view class="scene-text">{{item.scene}}</view>
+    </view>
+    <view class="change">
+      <text class="change-label">可能带来的变化</text>
+      <view class="change-text">{{item.change}}</view>
+    </view>
+    <view class="row">
+      <view class="btn btn-ghost" hover-class="btn-ghost-hover" data-id="{{item.id}}" data-action="{{item.action}}" onTap="onDirectionAction">{{item.actionLabel}}</view>
+    </view>
+  </view>
+
+  <view class="empty">暂时不选也完全可以。方向随时可以改，不需要给自己一个交代。</view>
+
+  <view class="card" a:if="{{choice && activeDirection}}">
+    <view class="kicker">你选择的方向</view>
+    <view class="dir-head">
+      <text class="dir-title">{{activeDirection.title}}</text>
+      <text class="badge" a:if="{{!active}}">已暂停</text>
+    </view>
+    <view class="dir-desc">{{active ? '下面这些是可以试试的小事，不是每日任务。做与不做，都不会影响任何评价。' : '这个方向现在停在这里，没有任何惩罚。你想继续时，随时可以继续。'}}</view>
+
+    <view class="tasks" a:if="{{active}}">
+      <view class="task" a:for="{{activeDirection.tasks}}" a:key="id">
+        <view class="task-title">{{item.title}}</view>
+        <view class="task-desc">{{item.desc}}</view>
+        <view class="fb-row">
+          <view class="fb" hover-class="fb-hover" data-task="{{item.id}}" data-feedback="done" onTap="onFeedback">{{feedbackDone}}</view>
+          <view class="fb" hover-class="fb-hover" data-task="{{item.id}}" data-feedback="tried" onTap="onFeedback">{{feedbackTried}}</view>
+          <view class="fb" hover-class="fb-hover" data-task="{{item.id}}" data-feedback="later" onTap="onFeedback">{{feedbackLater}}</view>
+        </view>
+
+        <view class="reflection" a:if="{{pendingTaskId === item.id}}">
+          <view class="reflection-label">想补一句当时的感受吗？（可以跳过）</view>
+          <input class="reflection-input" maxlength="140" onInput="onReflection" placeholder="比如：比想象中难，但做完之后轻了一点。" />
+          <view class="row">
+            <view class="btn btn-primary" hover-class="btn-primary-hover" onTap="onSaveLog">保存这条记录</view>
+            <view class="btn btn-quiet" onTap="onCancelLog">不写了</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="section-title">你留下的记录</view>
+    <block a:if="{{hasLogs}}">
+      <view class="log" a:for="{{logs}}" a:key="id">
+        <view class="log-time">{{item.time}}</view>
+        <view class="log-body">
+          <text class="log-feedback">{{item.feedback}}</text>
+          <text class="log-reflection" a:if="{{item.reflection}}">{{item.reflection}}</text>
+          <text class="log-reflection" a:if="{{!item.reflection}}">没有补充文字，也完全可以。</text>
+        </view>
+      </view>
+    </block>
+    <view class="empty" a:if="{{!hasLogs}}">还没有记录。你不需要每天都来，也不需要完成任何任务。</view>
+
+    <view class="section-title">成长里程碑</view>
+    <block a:if="{{hasLogs}}">
+      <view class="mile {{milestone.confirmed ? 'mile-confirmed' : ''}}" a:if="{{milestone}}">
+        <view class="mile-head">
+          <text class="mile-title">{{milestone.title}}</text>
+          <text class="badge">{{milestone.confirmed ? '已确认' : '待你确认'}}</text>
+        </view>
+        <view class="mile-desc">{{milestone.description}}</view>
+        <view class="mile-meta">依据 {{milestone.evidenceCount}} 条真实记录 · {{milestone.time}}</view>
+        <view class="row" a:if="{{!milestone.confirmed}}">
+          <view class="btn btn-primary" hover-class="btn-primary-hover" onTap="onConfirmMilestone">确认并保存</view>
+          <view class="btn btn-quiet" onTap="onDiscardMilestone">先不保存</view>
+        </view>
+        <view class="empty" a:if="{{milestone.confirmed}}">里程碑描述的是你的觉察或选择，而不是任务数量。它不会因为你暂停方向而失效。</view>
+      </view>
+      <view class="row" a:if="{{!milestone}}">
+        <view class="btn btn-ghost" hover-class="btn-ghost-hover" onTap="onMilestone">把这段时间整理成一个里程碑</view>
+      </view>
+      <view class="empty" a:if="{{!milestone}}">草稿会先给你看，只有你确认之后才会保存。</view>
+    </block>
+    <view class="empty" a:if="{{!hasLogs}}">留下一条记录之后，这里会帮你整理一个里程碑草稿。它不会用连续天数或完成率来评价你。</view>
+  </view>
+
+  <view class="disclaimer">这一板块不设打卡、积分、等级或排行榜。任务可以跳过，方向可以暂停，里程碑只有你确认后才会保存。</view>
+
+  <view class="row">
+    <view class="btn btn-quiet" onTap="onBackReport">回到理解报告</view>
+  </view>
+</view>

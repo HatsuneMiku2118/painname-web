@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F8F3ED">
+<title>给痛苦一个名字</title>
+<meta name="description" content="不是给人贴标签，而是给痛苦一个名字。基于专业概念库的情感痛苦识别、理解与成长工具。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='%239E5A45' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%239E5A45' opacity='.7'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="#home" data-action="go-home" aria-label="返回首页">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">给痛苦一个名字</span>
+  </a>
+  <nav class="topnav" aria-label="辅助功能">
+    <button class="ghost-btn" type="button" data-action="open-privacy">数据说明</button>
+    <button class="ghost-btn" type="button" data-action="open-archive">我的档案</button>
+  </nav>
+</header>
+
+<nav class="stepper" id="stepper" aria-label="三个板块"></nav>
+
+<main id="view" class="shell" tabindex="-1" aria-live="polite"></main>
+
+<footer class="footer">
+  <p>这不是心理诊断、心理治疗或危机干预服务。它提供的是基于公开心理学概念的理解与知识匹配，不替代专业帮助。</p>
+  <p class="footer-dim">产品原型 · 记录保存在你的浏览器本地，数据用途见「数据说明」</p>
+</footer>
+
+<button class="demo-toggle" id="demoToggle" type="button" aria-expanded="false" aria-controls="demoPanel">演示</button>
+<div class="demo-panel" id="demoPanel" hidden>
+  <p class="demo-title">演示与验收</p>
+  <p class="demo-status" id="aiStatus">模型：检测中…</p>
+  <button type="button" class="demo-btn" data-action="demo-at01">AT-01 恋爱中的不安</button>
+  <button type="button" class="demo-btn" data-action="demo-at02">AT-02 信息不足</button>
+  <button type="button" class="demo-btn" data-action="demo-nomatch">EX-03 概念库无匹配</button>
+  <button type="button" class="demo-btn" data-action="demo-fail">EX-01 模拟生成失败</button>
+  <button type="button" class="demo-btn demo-danger" data-action="wipe-all">清空全部数据</button>
+</div>
+
+<div class="modal-root" id="modalRoot" hidden></div>
+<div class="sr-only" id="live" aria-live="assertive"></div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/ai.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

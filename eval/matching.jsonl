@@ -1,0 +1,122 @@
+{"id": "m01", "text": "我总是不停回想白天他那句话的语气，反复翻聊天记录，想弄清楚他到底什么意思，一想就是几个小时，什么也没做。", "gold": "rumination", "expect": "match", "note": "反复回想 + 翻记录 + 无行动"}
+{"id": "m02", "text": "一件事过去很久了，我还是会一遍遍在脑子里重播，明知道想不出答案也停不下来，晚上尤其明显。", "gold": "rumination", "expect": "match", "note": "停不下来的重播"}
+{"id": "m03", "text": "他只要回消息慢一点，我就坐立不安，一直看手机，忍不住想他是不是不在乎我了，要反复确认他还在。", "gold": "attachment_anxiety", "expect": "match", "note": "迟回引发警报 + 反复确认"}
+{"id": "m04", "text": "他一冷淡我就慌，会连续发好几条消息问他怎么了，怕他哪天突然不要我。", "gold": "attachment_anxiety", "expect": "match", "note": "怕被抛弃 + 靠近确认"}
+{"id": "m05", "text": "对方回得很短，我立刻觉得他嫌我烦，之后再也不敢主动开口，怕被拒绝。", "gold": "rejection_sensitivity", "expect": "match", "note": "模糊信号读成拒绝 + 提前防御"}
+{"id": "m06", "text": "别人一个眼神不对，我就觉得是在否定我，宁可不提要求，也不想听到拒绝。", "gold": "rejection_sensitivity", "expect": "match", "note": "预期被拒 + 不提需求"}
+{"id": "m07", "text": "我们暧昧了半年，他从没说过我们算什么，我每天猜他的意思，又不敢问清楚。", "gold": "relational_uncertainty", "expect": "match", "note": "关系未定义 + 猜 + 不敢问"}
+{"id": "m08", "text": "他对外说我是朋友，私下又很亲密，我不知道这段关系到底算什么，一直在等一个明确的说法。", "gold": "relational_uncertainty", "expect": "match", "note": "信息缺失导致的不确定"}
+{"id": "m09", "text": "每次吵架我第一反应都是反省自己，觉得是我太敏感、要求太多，才把他推远的。", "gold": "self_blame", "expect": "match", "note": "把问题归因于自己"}
+{"id": "m10", "text": "事情出问题，我总觉得是自己的错，哪怕别人说不是，我也在想是不是我哪里做得不够好。", "gold": "self_blame", "expect": "match", "note": "稳定的自责归因"}
+{"id": "m11", "text": "分手后我不知道自己是谁了，以前的生活都是围着他转，现在每天空得发慌。", "gold": "breakup_identity", "expect": "match", "note": "分手后自我概念模糊"}
+{"id": "m12", "text": "分开两个月，我还是会按两个人的习惯安排时间，突然意识到只剩我一个，很不真实。", "gold": "breakup_identity", "expect": "match", "note": "身份与日常结构断裂"}
+{"id": "m13", "text": "我说不清自己到底是什么感觉，只知道很难受，别人问我是委屈还是生气，我答不上来。", "gold": "emotional_granularity", "expect": "match", "note": "无法区分情绪"}
+{"id": "m14", "text": "我心里堵得慌，但只会用「烦」来形容，分不清是失望、难过还是生气。", "gold": "emotional_granularity", "expect": "match", "note": "情绪词汇贫乏"}
+{"id": "m15", "text": "我越想沟通他越沉默，他一躲我就更着急追问，最后两个人都累。", "gold": "demand_withdraw", "expect": "match", "note": "追—退循环"}
+{"id": "m16", "text": "每次我提需要，他就转移话题或者干脆不说话，我追得越紧他退得越远。", "gold": "demand_withdraw", "expect": "match", "note": "要求—退缩"}
+{"id": "m17", "text": "在关系里我从不提自己的需要，怕说了会吵架，什么都忍着，装作没事。", "gold": "self_silencing", "expect": "match", "note": "压抑表达"}
+{"id": "m18", "text": "明明很难受，我还是会说「我没事」，不想给对方添麻烦，久了连自己想要什么都不知道了。", "gold": "self_silencing", "expect": "match", "note": "自我沉默 + 失去需求感"}
+{"id": "p01", "text": "明明已经决定不再想了，可一到晚上脑子又开始自动回放那天的场景，反复琢磨我哪句话说错了。", "gold": "rumination", "expect": "match", "note": "夜间自动回放"}
+{"id": "p02", "text": "同一段聊天记录我看了十几遍，逐字分析他的语气，想找出他变心的证据。", "gold": "rumination", "expect": "match", "note": "反复检索线索"}
+{"id": "p03", "text": "他出差两天，我没收到晚安就睡不着，连着发了几条问他在干嘛，怕他遇到别人。", "gold": "attachment_anxiety", "expect": "match", "note": "缺席触发 + 连续确认"}
+{"id": "p04", "text": "只要他没秒回，我就开始设想最坏的结果，必须听到他说「我在」才能安心。", "gold": "attachment_anxiety", "expect": "match", "note": "需要口头保证"}
+{"id": "p05", "text": "我发消息前会反复删改，怕说错被嫌烦；对方回复冷淡，我就再也不主动了。", "gold": "rejection_sensitivity", "expect": "match", "note": "预演被拒 + 退缩"}
+{"id": "p06", "text": "他说不想定义关系，我却每天都在等他给个说法，连他朋友圈的一条动态都要猜半天。", "gold": "relational_uncertainty", "expect": "match", "note": "等待定义 + 过度解读"}
+{"id": "p07", "text": "他心情不好，我就觉得是我没照顾好；哪怕他只是工作累，我也会反省自己是不是太黏人。", "gold": "self_blame", "expect": "match", "note": "过度归因于自己"}
+{"id": "p08", "text": "在一起五年，分手后我连周末该干什么都不知道，好像那个会生活的人跟着他一起走了。", "gold": "breakup_identity", "expect": "match", "note": "生活结构随关系消失"}
+{"id": "p09", "text": "我知道自己不舒服，但说不上来是被忽视还是失望，只能笼统地说「心里不舒服」。", "gold": "emotional_granularity", "expect": "match", "note": "只能给出笼统描述"}
+{"id": "p10", "text": "我一说想谈谈，他就说「又来了」，然后沉默；他一沉默我更急，最后变成我追着他吵。", "gold": "demand_withdraw", "expect": "match", "note": "提需求即触发退缩"}
+{"id": "p11", "text": "我习惯把想说的话咽回去，怕破坏气氛；他问怎么了，我说没事，其实心里堵得厉害。", "gold": "self_silencing", "expect": "match", "note": "咽回去 + 掩饰"}
+{"id": "p12", "text": "吵架时我从不表达自己的委屈，先道歉、先哄他，事后一个人难受很久。", "gold": "self_silencing", "expect": "match", "note": "优先安抚对方"}
+{"id": "n01", "text": "明天要做一个工作汇报，我有点紧张，怕自己讲不好。", "gold": "__none__", "expect": "none", "note": "职场表现焦虑，概念库未覆盖"}
+{"id": "n02", "text": "最近总是胃疼，去医院查了没大问题，但一直不太舒服。", "gold": "__none__", "expect": "none", "note": "躯体不适，不是关系议题"}
+{"id": "n03", "text": "我妈生病住院了，我每天跑医院，很累。", "gold": "__none__", "expect": "none", "note": "照护负担，概念库未覆盖"}
+{"id": "n04", "text": "这次考试没考好，有点失落，下次再努力。", "gold": "__none__", "expect": "none", "note": "一次性失落，无反复模式"}
+{"id": "n05", "text": "和朋友约饭他迟到了半小时，我有点不高兴，说了他一句就过去了。", "gold": "__none__", "expect": "none", "note": "已处理的轻微摩擦"}
+{"id": "n06", "text": "我家猫走丢三天了，我到处贴寻猫启事，睡不好。", "gold": "__none__", "expect": "none", "note": "丧失与焦虑，但对象非亲密关系"}
+{"id": "n07", "text": "不知道自己适合做什么工作，有点迷茫。", "gold": "__none__", "expect": "none", "note": "职业迷茫"}
+{"id": "n08", "text": "最近天气一直不好，心情也跟着有点闷。", "gold": "__none__", "expect": "none", "note": "泛化情绪，无线索"}
+{"id": "h01", "text": "他今天没回我消息，但我知道他在手术台上，我一点也不担心，晚上他打来电话我们就聊了几句。", "gold": "__none__", "expect": "none", "note": "难负例：迟回但有合理信息，无警报"}
+{"id": "h02", "text": "分手是我提的，我难受了几天，但现在觉得轻松，已经开始安排新的生活。", "gold": "__none__", "expect": "none", "note": "难负例：分手但无身份断裂"}
+{"id": "h03", "text": "我想了很久要不要换工作，反复比较两个 offer，最后列了个表决定。", "gold": "__none__", "expect": "none", "note": "难负例：深思但有结论，属问题解决"}
+{"id": "h04", "text": "我有点社恐，聚会上不太敢说话，但朋友都很照顾我。", "gold": "__none__", "expect": "none", "note": "难负例：社交回避，非关系痛苦"}
+{"id": "h05", "text": "他忘了我们的纪念日，我有点不高兴，跟他说了之后他补了礼物，这事就过去了。", "gold": "__none__", "expect": "none", "note": "难负例：冲突已解决"}
+{"id": "h06", "text": "我妈总催我结婚，我烦但也能理解她，敷衍两句就过去了。", "gold": "__none__", "expect": "none", "note": "难负例：亲子摩擦，已消化"}
+{"id": "h07", "text": "最近项目压力大，我失眠，但项目结束后就好了。", "gold": "__none__", "expect": "none", "note": "难负例：情境性失眠"}
+{"id": "h08", "text": "我性格比较敏感，别人一句话我会多想一下，但不会影响我做别的事。", "gold": "__none__", "expect": "none", "note": "难负例：特质描述，无功能受损"}
+{"id": "h09", "text": "朋友失恋了，我陪她聊了一晚上，替她难过。", "gold": "__none__", "expect": "none", "note": "难负例：第三人称"}
+{"id": "h10", "text": "我们异地，见面少，但我信任他，忙起来也就不想了。", "gold": "__none__", "expect": "none", "note": "难负例：安全型反应"}
+{"id": "c01", "text": "我恨它，厌恶它，简直无法忍受！", "gold": "__none__", "expect": "none", "note": "语料负例：对象不明，无线索"}
+{"id": "c02", "text": "哥们儿，身体疼痛加悲伤，最后还是自己做了。我得抬起头，继续前行。", "gold": "__none__", "expect": "none", "note": "语料负例：躯体疼痛 + 自我鼓励"}
+{"id": "c03", "text": "持续的疼痛又回来了！！！", "gold": "__none__", "expect": "none", "note": "语料负例：纯躯体"}
+{"id": "c04", "text": "你是个令人作呕的垃圾。", "gold": "__none__", "expect": "none", "note": "语料负例：攻击他人"}
+{"id": "c05", "text": "很高兴你感觉好点了！不过，我的提议还在，如果你需要人帮忙，我在这里。", "gold": "__none__", "expect": "none", "note": "语料负例：支持朋友"}
+{"id": "c06", "text": "哥哥刚刚告诉我，等我上大学他会多么想我。", "gold": "__none__", "expect": "none", "note": "语料负例：亲情想念"}
+{"id": "c07", "text": "哎呀妈呀！我睡过头了！我半小时前就应该在片场了！我得赶紧走了！", "gold": "__none__", "expect": "none", "note": "语料负例：急性情境焦虑"}
+{"id": "c08", "text": "我在另一篇帖子看到，他不久后因内伤去世了。", "gold": "__none__", "expect": "none", "note": "语料负例：他人死亡，非自身痛苦"}
+{"id": "m19", "text": "白天开会时领导皱了一下眉，我到现在还在反复想他那个表情是什么意思，别的什么都没干。", "gold": "rumination", "expect": "match", "note": "单一表情反复解读 + 无行动"}
+{"id": "m20", "text": "我知道再想也没用，可就是停不下来，同一段对话在脑子里来回播，越想越乱。", "gold": "rumination", "expect": "match", "note": "明知无用仍反复重播"}
+{"id": "m21", "text": "他没回我消息的那两个小时，我把聊天记录翻了两遍，脑子里全是他是不是不想理我了。", "gold": "rejection_sensitivity", "expect": "match", "note": "延迟回应读成拒绝；与依恋焦虑重叠，按线索归拒绝敏感性"}
+{"id": "m22", "text": "每次他晚归，我都会一直等到门响，期间不停地想他会不会出事、会不会不回来了。", "gold": "attachment_anxiety", "expect": "match", "note": "等待中持续确认 + 怕失去"}
+{"id": "m23", "text": "群里发消息没人回，我马上删掉了，觉得大家嫌我烦，以后再也不在群里说话了。", "gold": "rejection_sensitivity", "expect": "match", "note": "沉默读成拒绝 + 撤回表达"}
+{"id": "m24", "text": "同事没跟我打招呼，我一整天都在想是不是哪里得罪他了，见到他就绕开。", "gold": "rejection_sensitivity", "expect": "match", "note": "中性信号读成排斥 + 回避"}
+{"id": "m25", "text": "我们每天聊天、也见过几次，但他从没说过我们是什么关系，我一直在猜他到底怎么想。", "gold": "relational_uncertainty", "expect": "match", "note": "关系定义缺失 + 反复揣测"}
+{"id": "m26", "text": "他对我时好时冷，我不知道自己在他心里算什么，想问又怕问完就结束了。", "gold": "relational_uncertainty", "expect": "match", "note": "投入不确定 + 想问不敢问"}
+{"id": "m27", "text": "我们一吵架我就觉得是我的问题，是我太敏感、太不会说话，才把关系弄成这样。", "gold": "self_blame", "expect": "match", "note": "把冲突归因于自身性格"}
+{"id": "m28", "text": "他冷淡之后我反复检讨自己，觉得一定是我哪里做得不够好，才让他不想靠近。", "gold": "self_blame", "expect": "match", "note": "对方的疏远算成自己的错"}
+{"id": "m29", "text": "分手三个月了，我发现我连周末想干什么都不知道了，以前的计划里全是我们。", "gold": "breakup_identity", "expect": "match", "note": "关系结束后自我描述空缺"}
+{"id": "m30", "text": "分开之后我照镜子都觉得陌生，不知道没有他的我是谁，也不知道该往哪走。", "gold": "breakup_identity", "expect": "match", "note": "自我概念清晰度下降"}
+{"id": "m31", "text": "别人问我怎么了，我只能说难受，具体是委屈、失望还是害怕，我说不上来。", "gold": "emotional_granularity", "expect": "match", "note": "只会用笼统词 + 自己点出分不清"}
+{"id": "m32", "text": "我心里堵得慌，但让我形容，我只会说烦、说不好，找不到更准确的词。", "gold": "emotional_granularity", "expect": "match", "note": "缺乏具体情绪词汇"}
+{"id": "m33", "text": "我越想跟他把话说清楚，他越是不接话，最后干脆走开，我就更急着追上去问。", "gold": "demand_withdraw", "expect": "match", "note": "追问—退缩互相强化"}
+{"id": "m34", "text": "每次我想谈谈我们的问题，他就说累了改天，我就一直追问，两个人都越来越烦。", "gold": "demand_withdraw", "expect": "match", "note": "要求回应 vs 回避冲突"}
+{"id": "m35", "text": "我其实很介意他周末总跟朋友出去，但我一次都没说，怕说了显得我小气、把他推远。", "gold": "self_silencing", "expect": "match", "note": "清楚不满却选择不说"}
+{"id": "m36", "text": "他开玩笑说我胖，我笑着跟着说，心里很不舒服，但我不想为这个破坏气氛。", "gold": "self_silencing", "expect": "match", "note": "为维持和谐压抑感受"}
+{"id": "m37", "text": "体检报告还没出来，我已经把最坏的结果想了一遍，连怎么跟家里说都想好了。", "gold": "worry", "expect": "match", "note": "未发生 + 预设最坏结果"}
+{"id": "m38", "text": "下个月要交的方案还没开始，我每天都在想万一做砸了怎么办，越想越不敢动手。", "gold": "worry", "expect": "match", "note": "万一式假设 + 指向未来"}
+{"id": "m39", "text": "我在会上把一个数据说错了，散会后一整天都在想别人会怎么看我，觉得自己整个人都很差劲。", "gold": "shame", "expect": "match", "note": "错误上升为整体否定"}
+{"id": "m40", "text": "被指出问题时我脸一下子发烫，只想立刻离开那个房间，之后再也不敢主动发言。", "gold": "shame", "expect": "match", "note": "身体反应 + 想消失 + 回避"}
+{"id": "m41", "text": "我有一群可以约饭的朋友，但真正难受的时候，一个能说的人都没有。", "gold": "loneliness", "expect": "match", "note": "有联系人但缺被理解"}
+{"id": "m42", "text": "微信里几百个联系人，可晚上想找人说说话，翻了一遍又一遍，最后还是关掉手机。", "gold": "loneliness", "expect": "match", "note": "主观连接不足"}
+{"id": "m43", "text": "要是那天我留下来把话说完，可能就不会走到分手，我每天都在心里重演那个晚上。", "gold": "counterfactual_regret", "expect": "match", "note": "改写已发生的事"}
+{"id": "m44", "text": "我总在想，如果当初选了另一份工作，现在的生活会不会完全不一样。", "gold": "counterfactual_regret", "expect": "match", "note": "假设性比较评价现实"}
+{"id": "m45", "text": "这半年一直在照顾家里，睡够了也还是累，什么都不想做，连消息都不想回。", "gold": "emotional_exhaustion", "expect": "match", "note": "长期付出 + 休息无效"}
+{"id": "m46", "text": "工作上要一直安抚客户，回家还要应付家里，最近已经完全麻木，哭都哭不出来。", "gold": "emotional_exhaustion", "expect": "match", "note": "情绪资源耗竭 + 麻木"}
+{"id": "m47", "text": "我从来不跟他说我想要什么，反正说了也没用，不如我自己忍着，至少不吵架。", "gold": "self_silencing", "expect": "match", "note": "主动放弃表达换取太平"}
+{"id": "m48", "text": "只要有人夸我，我就觉得他是在客气，心里想的是他要是知道真实的我肯定不会这么说。", "gold": "shame", "expect": "match", "note": "难以接受称赞 + 整体自我否定"}
+{"id": "m49", "text": "公司团建大家都很热闹，我坐在旁边笑，心里觉得跟他们隔着一层玻璃。", "gold": "loneliness", "expect": "match", "note": "人群中的隔离感"}
+{"id": "m50", "text": "事情过去两年了，我还是会想早知道就不签那个合同，反复算如果换条路会怎样。", "gold": "counterfactual_regret", "expect": "match", "note": "长期反复重算另一种可能"}
+{"id": "m51", "text": "休息了一个周末，周一还是提不起劲，感觉自己像被抽干了一样，什么都做不了。", "gold": "emotional_exhaustion", "expect": "match", "note": "休息后仍无法恢复"}
+{"id": "m52", "text": "我常常搞不清自己是生气还是难过，只知道心里很不舒服，说不上来到底是什么。", "gold": "emotional_granularity", "expect": "match", "note": "无法区分相近情绪"}
+{"id": "k01", "text": "今天被领导当众批评，我挺生气的，下班跟同事吐槽了一路。", "gold": "__none__", "expect": "none", "note": "难负例：愤怒已通过吐槽消化"}
+{"id": "k02", "text": "堵车堵了一个小时，烦死了，到家就好了。", "gold": "__none__", "expect": "none", "note": "难负例：情境性烦躁，已结束"}
+{"id": "k03", "text": "看到新闻里有人遇难，心里很难受，但跟我自己的生活没太大关系。", "gold": "__none__", "expect": "none", "note": "难负例：共情式难过，非自身处境"}
+{"id": "k04", "text": "我朋友失恋了，我陪她聊了一晚上，她哭我也跟着难过。", "gold": "__none__", "expect": "none", "note": "难负例：第三人称，支持朋友"}
+{"id": "k05", "text": "最近加班多，睡不够，周末补一觉就缓过来了。", "gold": "__none__", "expect": "none", "note": "难负例：疲劳但可恢复，不符合耗竭"}
+{"id": "k06", "text": "面试没过，有点失望，准备再投几家。", "gold": "__none__", "expect": "none", "note": "难负例：单次失望，有行动计划"}
+{"id": "k07", "text": "我妈总唠叨我穿秋裤，我嫌烦但也没往心里去。", "gold": "__none__", "expect": "none", "note": "难负例：亲子小事，未内化"}
+{"id": "k08", "text": "猫把花瓶打碎了，我气得想揍它，收拾完就算了。", "gold": "__none__", "expect": "none", "note": "难负例：瞬时愤怒，已消化"}
+{"id": "k09", "text": "我对海鲜过敏，吃了会起疹子，很难受。", "gold": "__none__", "expect": "none", "note": "难负例：纯躯体反应"}
+{"id": "k10", "text": "他迟到半小时，我吐槽了两句，他道歉了我们就去吃饭了。", "gold": "__none__", "expect": "none", "note": "难负例：冲突当场修复"}
+{"id": "k11", "text": "最近在减肥，晚上会饿，忍一忍就过去了。", "gold": "__none__", "expect": "none", "note": "难负例：主动选择的暂时不适"}
+{"id": "k12", "text": "分手是我提的，现在挺轻松的，就是偶尔会想起以前。", "gold": "__none__", "expect": "none", "note": "难负例：分手但无自我概念混乱"}
+{"id": "k13", "text": "我不太会安慰人，朋友难过的时候我只会说别想太多。", "gold": "__none__", "expect": "none", "note": "难负例：技能不足的自我描述"}
+{"id": "k14", "text": "月底没钱了，有点焦虑，发了工资就好了。", "gold": "__none__", "expect": "none", "note": "难负例：经济压力，有明确出路"}
+{"id": "k15", "text": "今天特别累，走了一万多步，腿都酸了。", "gold": "__none__", "expect": "none", "note": "难负例：体力消耗，非情绪耗竭"}
+{"id": "k16", "text": "我性格比较内向，不太喜欢人多的场合。", "gold": "__none__", "expect": "none", "note": "难负例：特质描述，无痛苦与功能受损"}
+{"id": "k17", "text": "我讨厌他说话的方式，但工作该配合还是配合。", "gold": "__none__", "expect": "none", "note": "难负例：人际不喜欢但功能正常"}
+{"id": "k18", "text": "孩子发烧到39度，我一晚上没睡，现在退烧了。", "gold": "__none__", "expect": "none", "note": "难负例：照护性熬夜，已解除"}
+{"id": "k19", "text": "看完恐怖片有点怕黑，开着灯睡就好了。", "gold": "__none__", "expect": "none", "note": "难负例：短暂恐惧，可自行缓解"}
+{"id": "k20", "text": "朋友借钱不还，我很生气，决定以后不借了。", "gold": "__none__", "expect": "none", "note": "难负例：设边界后情绪落地"}
+{"id": "x01", "text": "哎呀妈呀！我睡过头了！我半小时前就应该在片场了！我得赶紧走了！", "gold": "__none__", "expect": "none", "note": "语料负例（MELD sc_009）：急性情境焦虑"}
+{"id": "x02", "text": "是啊，我听说那些F炸弹的事了！肯定是因为这个。谢谢你回复我：）在那之前，我和老公会焦急地等待", "gold": "__none__", "expect": "none", "note": "语料负例（GoEmotions sc_034）：期待中的轻微焦急"}
+{"id": "x03", "text": "一样，但在迪斯科舞厅里会感到恐慌", "gold": "__none__", "expect": "none", "note": "语料负例（GoEmotions sc_038）：场所恐慌，非关系议题"}
+{"id": "x04", "text": "我恨它，厌恶它，简直无法忍受！", "gold": "__none__", "expect": "none", "note": "语料负例（EmoBank sc_043）：厌恶，无痛苦模式"}
+{"id": "x05", "text": "哥们儿，#身体疼痛# #悲伤# 最后还是自己做了。我得抬起头，继续前行。", "gold": "__none__", "expect": "none", "note": "语料负例（CPM/tec sc_055）：躯体疼痛 + 自我鼓励"}
+{"id": "x06", "text": "我最不想做的就是回学校看到一帮我讨厌的人", "gold": "__none__", "expect": "none", "note": "语料负例（CPM/tec sc_057）：回避讨厌的人，无关系模式"}
+{"id": "x07", "text": "我在另一篇帖子看到，他不久后因内伤去世了。", "gold": "__none__", "expect": "none", "note": "语料负例（GoEmotions sc_035）：他人死亡，非自身丧失"}
+{"id": "x08", "text": "你是个令人作呕的垃圾。", "gold": "__none__", "expect": "none", "note": "语料负例（GoEmotions sc_030）：攻击他人"}
+{"id": "x09", "text": "很高兴你感觉好点了！不过，我的提议还在，如果你需要人帮忙，我在这里。", "gold": "__none__", "expect": "none", "note": "语料负例（GoEmotions sc_042）：支持朋友"}
+{"id": "x10", "text": "该死，YouTube和那些愤怒的戏剧对Reddit来说太赚钱了。", "gold": "__none__", "expect": "none", "note": "语料负例（GoEmotions sc_019）：对平台的愤怒"}
+{"id": "x11", "text": "哥哥刚刚告诉我，等我上大学他会多么想我", "gold": "__none__", "expect": "none", "note": "语料负例（CPM/tec sc_059）：亲情正向表达"}
+{"id": "x12", "text": "但我还不愿意让自己看起来那么狼狈。我得保持一点尊严。", "gold": "__none__", "expect": "none", "note": "语料负例（CPM/reman sc_056）：想保尊严，不是自我否定"}

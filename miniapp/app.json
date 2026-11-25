@@ -1,0 +1,16 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/identify/identify",
+    "pages/understand/understand",
+    "pages/growth/growth"
+  ],
+  "window": {
+    "defaultTitle": "给痛苦一个名字",
+    "titleBarColor": "#F8F3ED",
+    "navigationBarFrontColor": "black",
+    "backgroundColor": "#F8F3ED",
+    "pullRefresh": false,
+    "allowsBounceVertical": "NO"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "painname",
+  "version": "0.1.4",
+  "private": true,
+  "scripts": {
+    "start": "node server.mjs",
+    "sync:concepts": "node tools/import-feishu.mjs",
+    "data:build": "node tools/build-data.mjs",
+    "data:check": "node tools/build-data.mjs --check",
+    "data:fields": "node tools/import-feishu.mjs --fields",
+    "data:export": "node tools/build-data.mjs --export",
+    "eval:kb": "python eval/build_kb.py",
+    "eval:build": "python eval/build_scenarios.py",
+    "eval:run": "python eval/run_eval.py"
+  }
+}
