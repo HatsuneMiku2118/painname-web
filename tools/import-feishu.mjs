@@ -6,7 +6,7 @@
  *   1. 在飞书多维表格里编辑概念正文（名称、定义、解释等）并标记审核状态
  *   2. 导出为 CSV（UTF-8），放进 data/inbox/
  *   3. npm run sync:concepts
- *   4. 脚本合并进 data/concepts.json，并自动重新生成网页与小程序数据文件
+ *   4. 脚本合并进 data/concepts.json，并自动重新生成网页数据文件
  *
  * 用法：
  *   npm run sync:concepts                       导入 data/inbox 下最新的 CSV 并自动构建

@@ -1,6 +1,0 @@
-{
-  "defaultTitle": "理解与探索",
-  "usingComponents": {
-    "step-bar": "/components/step-bar/index"
-  }
-}

@@ -1,6 +1,0 @@
-{
-  "defaultTitle": "给痛苦一个名字",
-  "usingComponents": {
-    "step-bar": "/components/step-bar/index"
-  }
-}

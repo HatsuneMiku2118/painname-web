@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * 概念库构建：data/concepts.json（唯一数据源）→ 网页 / 小程序
+ * 概念库构建：data/concepts.json（唯一数据源）→ 网页
  *
  * 用法：
- *   node tools/build-data.mjs            生成 assets/js/data.js 与 miniapp/data/concepts.js
+ *   node tools/build-data.mjs            生成 assets/js/data.js
  *   node tools/build-data.mjs --check    只校验生成文件是否与 concepts.json 一致（不一致退出码 1）
  *   node tools/build-data.mjs --export   从现有 assets/js/data.js 反向导出 concepts.json（迁移用）
  *
@@ -12,7 +12,9 @@
  *     → 导出 CSV → node tools/import-feishu.mjs
  *     → data/concepts.json
  *     → node tools/build-data.mjs
- *     → 网页与小程序
+ *     → 网页
+ *
+ * 小程序代码已移到 miniapp 分支，不再参与构建。
  *
  * 说明：signals（关键词权重）、sources（文献）属于结构化字段，不通过多维表格维护，
  * 只保留在 concepts.json 中，导入脚本不会覆盖它们。
@@ -25,19 +27,12 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCE = path.join(ROOT, 'data', 'concepts.json');
 const WEB = path.join(ROOT, 'assets', 'js', 'data.js');
-const MINI = path.join(ROOT, 'miniapp', 'data', 'concepts.js');
 
 const WEB_BANNER = `/* 给痛苦一个名字 · 概念库
  * 本文件由 tools/build-data.mjs 自动生成，请不要直接编辑。
  * 编辑入口：飞书多维表格 → 导出 CSV → node tools/import-feishu.mjs
  */
 window.PAIN_DATA = `;
-
-const MINI_BANNER = `/* 给痛苦一个名字 · 概念库
- * 本文件由 tools/build-data.mjs 自动生成，请不要直接编辑。
- * 编辑入口：飞书多维表格 → 导出 CSV → node tools/import-feishu.mjs
- */
-module.exports = `;
 
 const REVIEW_STATUS = ['pending_review', 'approved', 'rejected'];
 
@@ -137,10 +132,6 @@ function buildWeb(data) {
   return WEB_BANNER + json3(data) + ';\n';
 }
 
-function buildMini(data) {
-  return MINI_BANNER + json3(data) + ';\n';
-}
-
 function normalizeEol(text) {
   return text.replace(/\r\n/g, '\n');
 }
@@ -206,7 +197,7 @@ const data = loadSource();
 validate(data);
 report(data);
 
-// 已驳回的条目不下发到网页和小程序
+// 已驳回的条目不下发到网页
 const rejected = data.concepts.filter((c) => c.review_status === 'rejected');
 if (rejected.length) {
   console.log('  已排除驳回条目 ' + rejected.length + ' 条：' + rejected.map((c) => c.id).join('、'));
@@ -214,8 +205,7 @@ if (rejected.length) {
 }
 
 const outputs = [
-  { file: WEB, next: buildWeb(data) },
-  { file: MINI, next: buildMini(data) }
+  { file: WEB, next: buildWeb(data) }
 ];
 
 if (args.includes('--check')) {
