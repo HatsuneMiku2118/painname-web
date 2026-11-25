@@ -11,3 +11,6 @@ __pycache__/
 # 工具与运行产生的本地目录
 .screenshots/
 .trae-html-share-packages/
+
+# 分享用的打包产物
+share/
