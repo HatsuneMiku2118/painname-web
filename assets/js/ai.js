@@ -101,6 +101,29 @@ window.AI = (function () {
     });
   }
 
+  /**
+   * 板块二第 4 页：把用户的具体场景与所选概念对应起来。
+   * 失败时抛异常，由调用方用本地规则拼一个保守版本。
+   */
+  function interpret(payload) {
+    return postJSON('/api/interpret', payload, 35000).then(function (data) {
+      if (!data.ok || !data.interpretation) throw new Error('bad_interpretation');
+      return data.interpretation;
+    });
+  }
+
+  /**
+   * 通用对话（板块三的 AI 入口）。返回助手回复文本。
+   */
+  function chat(messages, maxTokens) {
+    return postJSON('/api/chat', { messages: messages, max_tokens: maxTokens || 400 }, 35000).then(function (data) {
+      const content = data && data.choices && data.choices[0] && data.choices[0].message &&
+        data.choices[0].message.content;
+      if (!content) throw new Error('empty_reply');
+      return String(content).trim();
+    });
+  }
+
   function check() {
     const controller = new AbortController();
     const timer = window.setTimeout(function () { controller.abort(); }, 2500);
@@ -120,6 +143,8 @@ window.AI = (function () {
   return {
     check: check,
     identify: identify,
+    interpret: interpret,
+    chat: chat,
     report: report,
     available: function () { return info.configured; },
     state: function () { return info; }

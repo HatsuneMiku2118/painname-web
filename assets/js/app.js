@@ -13,13 +13,7 @@
   const State = {
     view: 'home',
     record: null,
-    report: null,
-    choice: null,
-    logs: [],
-    milestone: null,
-    depth: 'present',
-    originsText: '',
-    pendingFeedback: null,
+    aiTalk: null,
     retry: null,
     failNext: false,
     forceNoMatch: false
@@ -38,8 +32,6 @@
     { label: '分手后的不舍', text: '分手两周了，我还是会反复想起以前的细节，不知道自己现在想要什么。' },
     { label: '关系中的自我怀疑', text: '每次他不高兴，我都在想是不是我太敏感、要求太多。我不敢提自己的需要。' }
   ];
-
-  const DEPTH_LABEL = { present: '理解当下', origins: '探索形成因素', combined: '先理解当下，再看形成因素' };
 
   /* ---------------- 工具 ---------------- */
 
@@ -69,12 +61,6 @@
     try {
       localStorage.setItem(KEY, JSON.stringify({
         record: State.record,
-        report: State.report,
-        choice: State.choice,
-        logs: State.logs,
-        milestone: State.milestone,
-        depth: State.depth,
-        originsText: State.originsText,
         updatedAt: Date.now()
       }));
     } catch (err) { /* 隐私模式等情况下静默降级为内存态 */ }
@@ -86,12 +72,6 @@
       if (!raw) return;
       const data = JSON.parse(raw);
       State.record = data.record || null;
-      State.report = data.report || null;
-      State.choice = data.choice || null;
-      State.logs = data.logs || [];
-      State.milestone = data.milestone || null;
-      State.depth = data.depth || 'present';
-      State.originsText = data.originsText || '';
 
       // 兼容旧版本记录：老状态只有 identified / uncertain，视为已选定概念
       if (State.record && (State.record.status === 'identified' || State.record.status === 'uncertain') &&
@@ -106,19 +86,16 @@
       if (State.record && State.record.status === 'thinking') {
         E.finishChat(State.record);
       }
+      if (State.record) {
+        ensureUnderstand(State.record);
+        ensureGrowth(State.record);
+      }
     } catch (err) { /* 忽略损坏的数据 */ }
   }
 
   function resetRecord() {
     State.record = null;
-    State.report = null;
-    State.choice = null;
-    State.logs = [];
-    State.milestone = null;
-    State.depth = 'present';
-    State.originsText = '';
-    State.pendingFeedback = null;
-    State.forceNoMatch = false;
+    State.aiTalk = null;
     save();
   }
 
@@ -148,15 +125,17 @@
 
   function stepperHTML() {
     const cur = currentStep();
+    const growth = State.record && State.record.growth ? State.record.growth : null;
+    const understand = State.record && State.record.understand ? State.record.understand : null;
     const items = [
       { n: 1, label: '识别与命名', sub: '先弄清它是什么', target: 'identify', enabled: true },
       { n: 2, label: '理解与探索', sub: '它可能怎么运作', target: 'understand', enabled: !!(State.record && State.record.confirmed) },
-      { n: 3, label: '行动与成长', sub: '把理解变成行动', target: 'growth', enabled: !!State.report }
+      { n: 3, label: '行动与成长', sub: '把理解变成行动', target: 'growth', enabled: !!(understand && understand.situation && understand.situation.confirmed) }
     ];
     const done = {
       1: !!State.record,
-      2: !!State.report,
-      3: State.logs.length > 0 || !!(State.milestone && State.milestone.status === 'confirmed')
+      2: !!(understand && understand.situation && understand.situation.confirmed),
+      3: !!((growth && growth.practices && growth.practices.length) || (growth && growth.reminder && growth.reminder.confirmed))
     };
 
     let html = '<div class="stepper-inner">';
@@ -210,7 +189,7 @@
           '<p class="resume-label">上次的记录还留在这里</p>' +
           '<p class="resume-text">「' + esc(clip(State.record.raw, 46)) + '」</p>' +
           '<div class="row-actions">' +
-            '<button class="btn btn-ghost" type="button" data-action="resume">' + ((State.report || (State.record && State.record.confirmed)) ? '继续上次的理解' : '继续上次的识别') + '</button>' +
+            '<button class="btn btn-ghost" type="button" data-action="resume">' + ((State.record && State.record.confirmed) ? '继续上次的理解' : '继续上次的识别') + '</button>' +
             '<button class="btn btn-quiet" type="button" data-action="restart">开始新的描述</button>' +
           '</div>' +
         '</div>'
@@ -408,302 +387,662 @@
     else renderChosen(record);
   }
 
-  /* ---------------- 板块二 ---------------- */
+  /* ---------------- 板块二：共鸣 → 概念 → 场景 → 解释 → 触发情境 ---------------- */
+
+  function conceptOf(record) {
+    if (!record || !record.primary) return null;
+    return E.conceptById[record.primary.conceptId] || null;
+  }
+
+  function ensureUnderstand(record) {
+    if (!record.understand) {
+      record.understand = {
+        step: 'resonance',
+        resonance: null,
+        scene: { index: 0, answers: [] },
+        interpret: null,
+        interpretLoading: false,
+        situation: null
+      };
+    }
+    if (!record.understand.scene) record.understand.scene = { index: 0, answers: [] };
+    return record.understand;
+  }
+
+  function ensureGrowth(record) {
+    if (!record.growth) {
+      record.growth = { step: 'carry', directionId: null, practices: [], reminder: null, feedback: null, aiReply: '' };
+    }
+    if (!Array.isArray(record.growth.practices)) record.growth.practices = [];
+    return record.growth;
+  }
+
+  function goUStep(step) {
+    ensureUnderstand(State.record).step = step;
+    save();
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goGStep(step) {
+    ensureGrowth(State.record).step = step;
+    save();
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function understandProgress(record) {
+    const u = record && record.understand;
+    if (!u) return '未开始';
+    if (u.situation && u.situation.confirmed) return '已确认情境';
+    if (u.interpret) return '已对应经历';
+    if (u.step === 'scene') return '正在描述场景';
+    if (u.step === 'concept') return '已看概念';
+    return '待确认共鸣';
+  }
+
+  function growthLogCount(record) {
+    const g = record && record.growth;
+    if (!g || !Array.isArray(g.practices)) return 0;
+    return g.practices.reduce(function (n, p) { return n + (p.logs || []).length; }, 0);
+  }
 
   function renderUnderstand() {
-    if (!State.record) { State.view = 'home'; render(); return; }
-    if (!State.record.confirmed) { State.view = 'identify'; render(); return; }
-    if (State.report) renderReport();
-    else renderDepthPick();
+    const record = State.record;
+    if (!record) { State.view = 'home'; render(); return; }
+    if (!record.confirmed) { State.view = 'identify'; render(); return; }
+    const concept = conceptOf(record);
+    if (!concept) { State.view = 'home'; render(); return; }
+
+    const u = ensureUnderstand(record);
+    if (u.step === 'concept') return renderConceptPage(concept, u);
+    if (u.step === 'scene') return renderScenePage(concept, u);
+    if (u.step === 'interpret') return renderInterpretPage(concept, u);
+    if (u.step === 'situation') return renderSituationPage(concept, u);
+    if (u.step === 'summary') return renderUnderstandSummary(concept, u);
+    return renderResonancePage(concept, u);
   }
 
-  function renderDepthPick() {
-    const depths = [
-      { key: 'present', letter: 'A', title: '理解当下', desc: '看看现在的情绪、想法和行为，是怎么互相维持的' },
-      { key: 'origins', letter: 'B', title: '探索形成因素', desc: '如果你愿意，看看更早的经历可能留下了什么' },
-      { key: 'combined', letter: 'C', title: '两者结合', desc: '先理解当下，再去看可能的形成因素' }
-    ];
-    const needsOrigins = State.depth === 'origins' || State.depth === 'combined';
+  function stepDots(current, total) {
+    let html = '<div class="step-dots" aria-hidden="true">';
+    for (let i = 0; i < total; i++) {
+      html += '<span class="dot' + (i === current ? ' is-on' : (i < current ? ' is-done' : '')) + '"></span>';
+    }
+    return html + '</div>';
+  }
+
+  function renderResonancePage(concept, u) {
+    const excerpt = clip(String(State.record.raw || '').replace(/\s+/g, ' '), 46);
+    const sentence = '你提到「' + excerpt + '」。' + concept.scene;
 
     viewEl.innerHTML =
       '<div class="page-head">' +
         '<span class="kicker">板块二 · 理解与探索</span>' +
-        '<h2>你想理解到哪一层？</h2>' +
-        '<p class="sub">这里不会再问你已经说过的事。你在板块一写下的内容会被直接带过来。</p>' +
+        stepDots(0, 5) +
+        '<h2>这句话像你吗？</h2>' +
       '</div>' +
-      '<div class="depth-list">' +
-        depths.map(function (d) {
-          return '<button class="depth-card' + (State.depth === d.key ? ' is-selected' : '') + '" type="button" data-action="depth" data-depth="' + d.key + '" aria-pressed="' + (State.depth === d.key) + '">' +
-            '<span class="depth-key">' + d.letter + '</span>' +
-            '<span class="depth-body"><strong>' + d.title + '</strong><em>' + d.desc + '</em></span>' +
-          '</button>';
-        }).join('') +
+      '<div class="card resonance-card">' +
+        '<p class="resonance-text">' + esc(sentence) + '</p>' +
+        '<p class="quiet-note">这是基于你刚才的描述与「' + esc(concept.name) + '」的一句话概括，不是对你或对方的判断。</p>' +
       '</div>' +
-      (needsOrigins
-        ? '<div class="card origins-box">' +
-            '<label for="originsInput">可选：如果你愿意，可以先补充一点更早的经历</label>' +
-            '<p class="hint">没有补充也完全可以。我们不会替你推断童年、家庭或过去的关系。</p>' +
-            '<textarea id="originsInput" maxlength="600" placeholder="比如：小时候家里不太谈情绪，我习惯了有事先自己消化……">' + esc(State.originsText) + '</textarea>' +
-          '</div>'
-        : '') +
       '<div class="row-actions">' +
-        '<button class="btn btn-primary" type="button" data-action="generate-report">生成我的理解</button>' +
-        '<button class="btn btn-quiet" type="button" data-action="step" data-target="identify">回到板块一看看</button>' +
-      '</div>' +
-      '<p class="quiet-note">报告中会标出哪些是你提到的事实、哪些只是基于理论的可能解释，以及哪些目前还不知道。</p>';
+        '<button class="btn btn-primary" type="button" data-action="u-like">是，这很像我</button>' +
+        '<button class="btn btn-quiet" type="button" data-action="u-unlike">不太像，换一个概念</button>' +
+      '</div>';
   }
 
-  function linksHTML(report) {
-    if (!report.links.length) return '<p>这一段暂时没有可以对应到具体线索的内容。</p>';
-    return report.links.map(function (l) {
-      const tag = l.certainty === 'fact'
-        ? '<span class="tag tag-fact">你提到的</span>'
-        : (l.certainty === 'guess' ? '<span class="tag tag-guess">推测</span>' : '<span class="tag tag-hyp">理论解释</span>');
-      return '<div class="link-item">' +
-        '<span class="fact">「' + esc(clip(l.fact, 80)) + '」</span>' +
-        '<span class="interp">' + tag + esc(l.interpretation) + '</span>' +
+  function renderConceptPage(concept, u) {
+    const example = concept.scene || (concept.applicable || [])[0] || '';
+    viewEl.innerHTML =
+      '<div class="page-head">' +
+        '<span class="kicker">板块二 · 理解与探索</span>' +
+        stepDots(1, 5) +
+        '<h2>' + esc(concept.name) + '</h2>' +
+        '<p class="sub">' + esc(concept.plain) + '</p>' +
+      '</div>' +
+      '<section class="card concept-block">' +
+        '<h3>专业定义</h3>' +
+        '<p>' + esc(concept.definition) + '</p>' +
+        '<h3>通俗解释</h3>' +
+        '<p>' + esc((concept.explanation || [])[0] || concept.plain) + '</p>' +
+        '<h3>生活里可能的样子</h3>' +
+        '<p>' + esc(example) + '</p>' +
+        detailsHTML(concept) +
+      '</section>' +
+      '<div class="row-actions">' +
+        '<button class="btn btn-primary" type="button" data-action="u-to-scene">我想把它放进自己的经历里看看</button>' +
+        '<button class="btn btn-quiet" type="button" data-action="u-back-candidates">返回概念选择</button>' +
+      '</div>';
+  }
+
+  function detailsHTML(concept) {
+    const sources = (concept.sources || []).map(function (s) {
+      return '<div class="source">' +
+        '<p class="src-title">' + esc(s.authors) + ' (' + esc(s.year) + '). ' + esc(s.title) + '</p>' +
+        '<p class="src-venue">' + esc(s.venue) + '</p>' +
+        (s.note ? '<p class="src-note">' + esc(s.note) + '</p>' : '') +
       '</div>';
     }).join('');
+    const evidence = (concept.evidence || []).map(function (e) {
+      return '<div class="source">' +
+        '<p class="src-title">' + esc(e.source) + '（' + esc(e.locator) + '）</p>' +
+        '<p class="src-note">' + esc(e.claim) + '</p>' +
+        '<p class="src-note">支持范围：' + esc(e.supports) + '</p>' +
+      '</div>';
+    }).join('');
+    const applicable = (concept.applicable || []).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
+    const notApplicable = (concept.nonApplicable || []).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
+
+    return '<details class="acc">' +
+      '<summary>来源、适用边界与研究限制</summary>' +
+      '<div class="acc-body">' +
+        (sources ? '<h4>文献来源</h4>' + sources : '') +
+        (evidence ? '<h4>语料证据</h4>' + evidence : '') +
+        (applicable ? '<h4>适用情境</h4><ul class="missing-list">' + applicable + '</ul>' : '') +
+        (notApplicable ? '<h4>不适用情境</h4><ul class="missing-list">' + notApplicable + '</ul>' : '') +
+        '<p class="src-limit">研究限制：' + esc(concept.limits) + '</p>' +
+      '</div>' +
+    '</details>';
   }
 
-  function separationHTML(report) {
-    return '<div class="sep-grid">' +
-      '<div class="sep-col is-fact"><h4><span class="tag tag-fact">事实</span>你自己说过的</h4><ul>' +
-        (report.facts.length ? report.facts.map(function (f) { return '<li>' + esc(clip(f, 70)) + '</li>'; }).join('') : '<li>你在描述里没有明确写出可以单独列出的事实。</li>') +
-      '</ul></div>' +
-      '<div class="sep-col is-hyp"><h4><span class="tag tag-hyp">解释</span>基于理论的可能理解</h4><ul>' +
-        (report.hypotheses.length ? report.hypotheses.map(function (h) { return '<li>' + esc(h) + '</li>'; }).join('') : '<li>目前没有足够的依据给出理论解释。</li>') +
-      '</ul></div>' +
-      '<div class="sep-col is-unknown"><h4><span class="tag tag-unknown">未知</span>现在还无法确定的</h4><ul>' +
-        (report.unknowns.length ? report.unknowns.map(function (u) { return '<li>' + esc(u) + '</li>'; }).join('') : '<li>暂时没有列出待确认的信息。</li>') +
-      '</ul></div>' +
-    '</div>';
-  }
-
-  function sourcesHTML(report) {
-    if (!report.sources.length) {
-      return '<p>这次没有引用具体文献，因为还没有匹配到可追溯的概念条目。这比引用一个不确定的来源更诚实。</p>';
-    }
-    return '<details class="acc sources"><summary>查看概念来源与证据范围</summary><div class="acc-body">' +
-      report.sources.map(function (s) {
-        return '<div class="source">' +
-          '<p class="src-title">' + esc(s.authors) + ' (' + esc(s.year) + '). ' + esc(s.title) + '</p>' +
-          '<p class="src-venue">' + esc(s.venue) + '</p>' +
-          (s.note ? '<p class="src-note">' + esc(s.note) + '</p>' : '') +
-        '</div>';
-      }).join('') +
-      '<p class="src-limit">证据范围与局限：' + esc(report.limits) + '</p>' +
-      '</div></details>';
-  }
-
-  function renderReport() {
-    const report = State.report;
-    const record = State.record;
-    const concept = report.conceptId ? E.conceptById[report.conceptId] : null;
-    const title = concept ? '关于「' + concept.name + '」的一份理解' : '关于这份感受的一份理解';
-    const badge = report.status !== 'identified'
-      ? '<div class="report-banner">这份报告建立在有限的信息上。它更像一个可以讨论的方向，而不是结论。</div>'
-      : '';
-
-    const sections = [];
-    sections.push({
-      title: '这个痛苦叫什么',
-      body: '<p>' + report.explain.map(esc).join('</p><p>') + '</p>' +
-        (concept ? '<p class="quiet-note" style="margin-top:14px">专业定义：' + esc(concept.definition) + '</p>' : '')
+  function sceneQuestions(concept) {
+    if (Array.isArray(concept.sceneQuestions) && concept.sceneQuestions.length) return concept.sceneQuestions;
+    return (concept.indicators || []).slice(0, 3).map(function (t) {
+      return '你最近一次出现「' + t + '」，是在什么情况下？';
     });
+  }
 
-    if (report.mechanism.length) {
-      sections.push({
-        title: '它是怎么维持的',
-        body: '<p>' + report.mechanism.map(esc).join('</p><p>') + '</p>' +
-          (report.cycle.length
-            ? '<ol class="cycle">' + report.cycle.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>'
-            : '')
-      });
-    }
-
-    sections.push({ title: '它在你身上长什么样', body: linksHTML(report) });
-
-    if (report.depth === 'origins' || report.depth === 'combined') {
-      const qs = !report.origins.provided
-        ? '<p style="margin-top:14px;font-size:13px;color:#8B8078">可以从这些问题开始，也可以完全跳过：</p><ul class="missing-list">' +
-            report.origins.questions.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('') + '</ul>'
-        : '';
-      sections.push({
-        title: '更早的经历，可能留下了什么',
-        body: '<p>' + esc(report.origins.paragraph) + '</p>' + qs +
-          '<p style="margin-top:12px"><span class="tag tag-unknown">待探索</span> 这一节不是诊断，也不代表过去一定发生了什么。</p>'
-      });
-    }
-
-    sections.push({ title: '哪些是事实，哪些是解释', body: separationHTML(report) });
-    sections.push({ title: '把它重新说一遍', body: '<p class="summary-text">' + esc(report.summary) + '</p>' });
-    sections.push({ title: '理论依据', body: sourcesHTML(report) });
+  function renderScenePage(concept, u) {
+    const list = sceneQuestions(concept);
+    const index = Math.min(u.scene.index, list.length - 1);
+    const question = list[index];
 
     viewEl.innerHTML =
       '<div class="page-head">' +
         '<span class="kicker">板块二 · 理解与探索</span>' +
-        '<h2>' + esc(title) + '</h2>' +
-        (concept ? '<p class="sub">它描述的是：' + esc(concept.plain) + '</p>' : '') +
-        '<p class="meta">' + esc(DEPTH_LABEL[report.depth] || '') + ' · 基于你在板块一写下的内容</p>' +
+        stepDots(2, 5) +
+        '<h2>回想最近一次类似的情形</h2>' +
+        '<p class="sub">这些问题是围绕「' + esc(concept.name) + '」准备的，不需要全部答完，可以跳过。</p>' +
       '</div>' +
-      badge +
-      '<div class="report">' +
-        sections.map(function (s, i) {
-          return '<section class="report-section">' +
-            '<h3><span class="sec-index">' + String(i + 1).padStart(2, '0') + '</span>' + esc(s.title) + '</h3>' +
-            s.body +
-          '</section>';
-        }).join('') +
-      '</div>' +
-      '<div class="row-actions">' +
-        '<button class="btn btn-primary" type="button" data-action="growth">看看我可以往哪里走</button>' +
-        '<button class="btn btn-quiet" type="button" data-action="reset-report">换一个探索深度</button>' +
-      '</div>' +
-      '<p class="disclaimer">这份报告基于你提供的描述与概念库中的公开知识，不构成诊断，也不是对你或对方的定论。对方当时的想法，从这里无法得知。</p>';
-  }
-
-  /* ---------------- 板块三 ---------------- */
-
-  function directionsHTML() {
-    const directions = E.directionsFor(State.record);
-    const chosen = State.choice ? State.choice.directionId : null;
-    return directions.map(function (d, i) {
-      const isSelected = chosen === d.id;
-      return '<article class="card direction' + (isSelected ? ' is-selected' : '') + '">' +
-        '<div class="dir-head">' +
-          '<span class="dir-num">0' + (i + 1) + '</span>' +
-          '<h3>' + esc(d.title) + '</h3>' +
-          (isSelected ? '<span class="badge">当前方向</span>' : '') +
-        '</div>' +
-        '<p>' + esc(d.description) + '</p>' +
-        '<div class="scene"><span>可能的一个场景</span><p>' + esc(d.scene) + '</p></div>' +
-        '<p class="change"><span>可能带来的变化</span>' + esc(d.change) + '</p>' +
-        '<div class="dir-actions">' +
-          (isSelected
-            ? (State.choice.status === 'active'
-                ? '<button class="btn btn-ghost" type="button" data-action="pause-direction">暂时暂停这个方向</button>'
-                : '<button class="btn btn-ghost" type="button" data-action="resume-direction">继续这个方向</button>')
-            : '<button class="btn btn-ghost" type="button" data-action="pick-direction" data-id="' + d.id + '">设为当前方向</button>') +
-        '</div>' +
-      '</article>';
-    }).join('');
-  }
-
-  function tasksHTML(direction) {
-    const pending = State.pendingFeedback;
-    return '<div class="tasks">' +
-      direction.tasks.map(function (t) {
-        const isPending = pending && pending.taskId === t.id;
-        return '<div class="task">' +
-          '<h4>' + esc(t.title) + '</h4>' +
-          '<p>' + esc(t.desc) + '</p>' +
-          '<div class="task-actions">' +
-            ['done', 'tried', 'later'].map(function (f) {
-              return '<button class="fb-btn" type="button" data-action="feedback" data-task="' + t.id + '" data-feedback="' + f + '">' + esc(E.feedbackLabel[f]) + '</button>';
-            }).join('') +
+      '<section class="card scene-card">' +
+        '<p class="q-index">第 ' + (index + 1) + ' / ' + list.length + ' 个问题</p>' +
+        '<h3 class="scene-q">' + esc(question) + '</h3>' +
+        '<form data-form="u-scene">' +
+          '<textarea name="answer" maxlength="400" rows="4" placeholder="用自己的话写，一句话也可以">' + esc((u.scene.answers[index] || {}).text || '') + '</textarea>' +
+          '<div class="row-actions">' +
+            '<button class="btn btn-primary" type="submit">继续</button>' +
+            '<button class="btn btn-quiet" type="button" data-action="u-scene-skip">这题跳过</button>' +
           '</div>' +
-          (isPending
-            ? '<div class="reflection">' +
-                '<label for="reflectionInput">想补一句当时的感受吗？（可以跳过）</label>' +
-                '<input id="reflectionInput" maxlength="140" placeholder="比如：比想象中难，但做完之后轻了一点。">' +
-                '<div class="row-actions">' +
-                  '<button class="btn btn-primary" type="button" data-action="save-log">保存这条记录</button>' +
-                  '<button class="btn btn-quiet" type="button" data-action="cancel-log">不写了</button>' +
-                '</div>' +
-              '</div>'
-            : '') +
-        '</div>';
-      }).join('') +
-    '</div>';
+        '</form>' +
+      '</section>' +
+      (u.scene.answers.length ? '<p class="quiet-note">已经记下 ' + u.scene.answers.filter(function (a) { return a && a.text; }).length + ' 条回答。信息不足时，我们会说明，而不是硬给结论。</p>' : '');
   }
 
-  function logsHTML() {
-    if (!State.logs.length) {
-      return '<p class="mile-empty">还没有记录。你不需要每天都来，也不需要完成任何任务。</p>';
+  function localInterpret(concept, u) {
+    const facts = u.scene.answers.filter(function (a) { return a && a.text; })
+      .map(function (a) { return clip(a.text, 90); }).slice(0, 4);
+    const matches = (concept.indicators || []).slice(0, 2).map(function (t) {
+      return { fact: facts[0] || '你描述的情形', interpretation: '这与「' + t + '」有相似之处', certainty: 'hypothesis' };
+    });
+    return {
+      facts: facts,
+      matches: matches,
+      unknown: ['对方当时的想法，从这里无法得知', '这件事之后会怎样，还需要时间'],
+      caveat: '这部分是基于概念的可能理解，不是结论；如果和你的感受不符，可以直接修正。',
+      aiUsed: false
+    };
+  }
+
+  function requestInterpret(correction) {
+    const record = State.record;
+    const concept = conceptOf(record);
+    const u = ensureUnderstand(record);
+    if (!concept) return;
+
+    u.step = 'interpret';
+    u.interpretLoading = true;
+    u.fixing = false;
+    save();
+    render();
+
+    const payload = {
+      conceptId: concept.id,
+      raw: record.raw || '',
+      answers: (record.answers || []).map(function (a) {
+        return typeof a === 'string' ? { text: a } : { key: a.key, text: a.text, skipped: !!a.skipped };
+      }),
+      sceneAnswers: u.scene.answers.map(function (a) {
+        return { question: a.question, text: a.text, skipped: !!a.skipped };
+      }),
+      correction: correction || ''
+    };
+
+    AI.interpret(payload)
+      .then(function (res) {
+        u.interpret = res;
+        u.interpret.aiUsed = true;
+        u.interpret.correction = correction || '';
+      })
+      .catch(function () {
+        const local = localInterpret(concept, u);
+        local.correction = correction || '';
+        u.interpret = local;
+      })
+      .then(function () {
+        u.interpretLoading = false;
+        save();
+        render();
+      });
+  }
+
+  function renderInterpretPage(concept, u) {
+    if (u.interpretLoading || !u.interpret) {
+      viewEl.innerHTML =
+        '<div class="page-head"><span class="kicker">板块二 · 理解与探索</span>' + stepDots(3, 5) + '<h2>正在把这段经历和概念对上</h2></div>' +
+        '<div class="loader" role="status"><div class="loader-mark" aria-hidden="true"></div><p class="loader-text">正在整理你说过的情境与回应</p><p class="loader-dim">如果模型不可用，会先用本地规则给一个保守版本</p></div>';
+      return;
     }
-    const list = State.logs.slice().reverse().map(function (log) {
-      return '<li class="log-item">' +
-        '<span class="log-time">' + esc(fmt(log.createdAt)) + '</span>' +
-        '<span class="log-body">' +
-          '<strong class="log-feedback-' + esc(log.feedback) + '">' + esc(E.feedbackLabel[log.feedback] || '记录') + '</strong>' +
-          (log.reflection ? '<em>' + esc(log.reflection) + '</em>' : '<span>没有补充文字，也完全可以。</span>') +
-        '</span>' +
-      '</li>';
+
+    const it = u.interpret;
+    const matches = (it.matches || []).map(function (m) {
+      const tag = m.certainty === 'fact'
+        ? '<span class="tag tag-fact">你提到的</span>'
+        : '<span class="tag tag-hyp">可能解释</span>';
+      return '<div class="link-item">' +
+        '<span class="fact">「' + esc(clip(m.fact, 80)) + '」</span>' +
+        '<span class="interp">' + tag + esc(m.interpretation) + '</span>' +
+      '</div>';
     }).join('');
-    return '<ul class="timeline">' + list + '</ul>';
+
+    const correcting = !!u.fixing;
+
+    viewEl.innerHTML =
+      '<div class="page-head">' +
+        '<span class="kicker">板块二 · 理解与探索</span>' +
+        stepDots(3, 5) +
+        '<h2>用「' + esc(concept.name) + '」再看一遍你的经历</h2>' +
+        '<p class="sub">下面是把你说的内容和这个概念对应起来的结果。哪些贴近，哪些不对，由你判断。</p>' +
+      '</div>' +
+      '<section class="card interpret-card">' +
+        '<h3>你说过的</h3>' +
+        (it.facts && it.facts.length
+          ? '<ul class="missing-list">' + it.facts.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>'
+          : '<p>这一次没有可以单独列出的事实，下面的解释会更保守。</p>') +
+        '<h3>与概念的相似之处</h3>' +
+        (matches || '<p>仅凭目前的描述，还看不出明确的相似线索。</p>') +
+        '<h3>目前无法确定的</h3>' +
+        '<ul class="missing-list">' + (it.unknown || []).map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+        (it.caveat ? '<p class="quiet-note">' + esc(it.caveat) + '</p>' : '') +
+      '</section>' +
+      '<div class="row-actions">' +
+        '<button class="btn btn-primary" type="button" data-action="u-interpret-ok">这个理解比较贴近</button>' +
+        '<button class="btn btn-quiet" type="button" data-action="u-interpret-fix">有一部分不对，我想补充</button>' +
+      '</div>' +
+      (correcting
+        ? '<section class="card">' +
+            '<label for="correctionInput">哪里不对？补充后我会重新解释，而不是重复原来的结论。</label>' +
+            '<textarea id="correctionInput" maxlength="400" rows="3">' + esc(it.correction || '') + '</textarea>' +
+            '<div class="row-actions"><button class="btn btn-ghost" type="button" data-action="u-interpret-retry">按我的修正重新理解</button></div>' +
+          '</section>'
+        : '');
   }
 
-  function milestoneHTML() {
-    const dir = State.choice ? D.directions[State.choice.directionId] : null;
-    if (!State.logs.length) {
-      return '<p class="mile-empty">留下一条记录之后，这里会帮你整理一个里程碑草稿。它不会用连续天数或完成率来评价你。</p>';
-    }
-    if (!State.milestone) {
-      return '<div class="row-actions"><button class="btn btn-ghost" type="button" data-action="generate-milestone">把这段时间整理成一个里程碑</button></div>' +
-        '<p class="mile-empty">草稿会先给你看，只有你确认之后才会保存。</p>';
-    }
-    const m = State.milestone;
-    const confirmed = m.status === 'confirmed';
-    const hasNew = confirmed && State.logs.length > (m.evidenceLogIds || []).length;
-    return '<div class="mile-card' + (confirmed ? ' confirmed' : '') + '">' +
-      '<div class="mile-head">' +
-        '<h4>' + esc(m.title) + '</h4>' +
-        '<span class="badge' + (confirmed ? ' is-soft' : '') + '">' + (confirmed ? '已确认' : '待你确认') + '</span>' +
+  function renderSituationPage(concept, u) {
+    const options = (concept.situationOptions || []).slice(0, 3);
+    const s = u.situation || {};
+    viewEl.innerHTML =
+      '<div class="page-head">' +
+        '<span class="kicker">板块二 · 理解与探索</span>' +
+        stepDots(4, 5) +
+        '<h2>这种反应，通常在什么时候出现？</h2>' +
+        '<p class="sub">不是问你当时多难受，而是问：什么样的情境容易把你带到这里。</p>' +
       '</div>' +
-      '<p>' + esc(m.description) + '</p>' +
-      '<p class="mile-evidence">依据 ' + (m.evidenceLogIds || []).length + ' 条真实记录 · ' + esc(fmt(m.createdAt)) + '</p>' +
-      (confirmed
-        ? (hasNew ? '<div class="mile-actions"><button class="btn btn-ghost" type="button" data-action="generate-milestone">有新的记录，重新整理</button></div>' : '')
-        : '<div class="mile-actions">' +
-            '<button class="btn btn-primary" type="button" data-action="confirm-milestone">确认并保存</button>' +
-            '<button class="btn btn-quiet" type="button" data-action="discard-milestone">先不保存</button>' +
-          '</div>') +
-      '<p class="mile-empty">里程碑描述的是你的觉察或选择，而不是任务数量。' + (dir ? '它不会因为你暂停「' + esc(dir.title) + '」而失效。' : '') + '</p>' +
-    '</div>';
+      '<section class="card">' +
+        '<div class="option-list">' +
+          options.map(function (opt) {
+            return '<button class="option-chip' + (s.answer === opt ? ' is-on' : '') + '" type="button" data-action="u-situation-pick" data-text="' + esc(opt) + '">' + esc(opt) + '</button>';
+          }).join('') +
+          '<button class="option-chip' + (s.answer === '其他情况' ? ' is-on' : '') + '" type="button" data-action="u-situation-pick" data-text="其他情况">其他情况</button>' +
+        '</div>' +
+        '<form data-form="u-situation">' +
+          '<input name="answer" type="text" maxlength="120" placeholder="也可以自己写一句：比如「他连续两天没主动联系我时」" value="' + esc(s.answer && s.answer !== '其他情况' ? s.answer : '') + '">' +
+          '<div class="row-actions"><button class="btn btn-primary" type="submit">形成情境总结</button></div>' +
+        '</form>' +
+      '</section>' +
+      (s.summary
+        ? '<section class="card summary-card">' +
+            '<p class="summary-text">' + esc(s.summary) + '</p>' +
+            '<p class="quiet-note">这个总结准确吗？你可以改，也可以推翻。</p>' +
+            '<div class="row-actions">' +
+              '<button class="btn btn-primary" type="button" data-action="u-situation-confirm">准确，继续</button>' +
+              '<button class="btn btn-quiet" type="button" data-action="u-situation-retry">我想改一下</button>' +
+            '</div>' +
+          '</section>'
+        : '');
+  }
+
+  function whenPhrase(answer) {
+    const text = String(answer || '类似情境出现').trim();
+    return /[时后]$/.test(text) ? text : text + '时';
+  }
+
+  function buildSituationSummary(u, concept) {
+    const answer = (u.situation && u.situation.answer) || '';
+    const behaviors = (u.scene.answers || []).filter(function (a) { return a && a.text; });
+    const reaction = behaviors.length > 1 ? clip(behaviors[1].text, 40) : (concept.indicators || ['出现这种反应'])[0];
+    return '听起来，当' + whenPhrase(answer) + '，你通常会' + reaction + '。';
+  }
+
+  function renderUnderstandSummary(concept, u) {
+    const s = u.situation || {};
+    viewEl.innerHTML =
+      '<div class="page-head">' +
+        '<span class="kicker">板块二 · 理解与探索</span>' +
+        stepDots(5, 5) +
+        '<h2>先把这一步收在这里</h2>' +
+      '</div>' +
+      '<section class="card summary-card">' +
+        '<p class="quiet-note">你选择的概念</p>' +
+        '<h3>' + esc(concept.name) + '</h3>' +
+        '<p>' + esc(concept.plain) + '</p>' +
+        '<p class="quiet-note" style="margin-top:16px">你确认过的情境</p>' +
+        '<p class="summary-text">' + esc(s.summary || buildSituationSummary(u, concept)) + '</p>' +
+        '<p class="quiet-note">这一页只是把你说过的收在一起，不构成诊断。接下来可以看看，在这样的情境里，你想多一个什么选择。</p>' +
+      '</section>' +
+      '<div class="row-actions">' +
+        '<button class="btn btn-primary" type="button" data-action="u-to-growth">看看可以尝试的练习</button>' +
+        '<button class="btn btn-quiet" type="button" data-action="u-back-scene">回去补充场景</button>' +
+      '</div>';
+  }
+
+  /* ---------------- 板块三：承接 → 方向 → 练习 → 清单 → 反馈 → 回顾 ---------------- */
+
+  function directionsForConcept(concept) {
+    const ids = concept && Array.isArray(concept.directions) ? concept.directions : [];
+    const list = ids.map(function (id) { return D.directions[id]; }).filter(Boolean);
+    return list.length ? list : [D.directions.d_general].filter(Boolean);
   }
 
   function renderGrowth() {
-    if (!State.record) { State.view = 'home'; render(); return; }
-    if (!State.report) { goView('understand'); return; }
+    const record = State.record;
+    if (!record) { State.view = 'home'; render(); return; }
+    if (!record.confirmed) { State.view = 'identify'; render(); return; }
+    const u = ensureUnderstand(record);
+    if (!u.situation || !u.situation.confirmed) {
+      u.step = u.situation ? 'situation' : 'resonance';
+      save();
+      State.view = 'understand';
+      render();
+      return;
+    }
+    const concept = conceptOf(record);
+    const g = ensureGrowth(record);
+    if (g.step === 'direction') return renderDirectionPick(concept, g);
+    if (g.step === 'practice') return renderPracticePick(concept, g);
+    if (g.step === 'list') return renderPracticeList(concept, g);
+    if (g.step === 'feedback') return renderFeedbackPage(concept, g);
+    if (g.step === 'review') return renderReviewPage(concept, g, u);
+    return renderCarryPage(concept, g, u);
+  }
 
-    const firstHit = State.record.primary && State.record.primary.hits[0];
-    const clue = firstHit ? (firstHit.words[0] || firstHit.label) : '';
-    const hint = clue
-      ? '结合你提到的「' + clue + '」和上面那份理解，我想到这几个方向。'
-      : '从你写下的内容和上面那份理解出发，我想到这几个方向。';
-    const choice = State.choice;
-    const direction = choice ? D.directions[choice.directionId] : null;
-    const active = choice && choice.status === 'active';
+  function practiceFrom(direction, task, u) {
+    return {
+      id: direction.id + ':' + task.id,
+      directionId: direction.id,
+      directionTitle: direction.title,
+      taskId: task.id,
+      title: task.title,
+      action: task.desc,
+      purpose: direction.description,
+      when: (u.situation && u.situation.summary) || '当类似情境再次出现时',
+      status: 'active',
+      addedAt: Date.now(),
+      logs: []
+    };
+  }
+
+  function renderCarryPage(concept, g, u) {
+    viewEl.innerHTML =
+      '<div class="page-head">' +
+        '<span class="kicker">板块三 · 行动与成长</span>' +
+        stepDots(0, 6) +
+        '<h2>从这里接着往下走</h2>' +
+      '</div>' +
+      '<section class="card carry-card">' +
+        '<p class="quiet-note">你在板块二确认过的</p>' +
+        '<p class="summary-text">' + esc((u.situation && u.situation.summary) || '') + '</p>' +
+        '<p>接下来的练习，是帮你在类似情境里多一个选择。这不代表沟通的问题都由你负责，也不要求你改变对方。</p>' +
+      '</section>' +
+      '<div class="row-actions">' +
+        '<button class="btn btn-primary" type="button" data-action="g-start">看看可以尝试的练习</button>' +
+        '<button class="btn btn-quiet" type="button" data-action="g-later">暂时不选</button>' +
+      '</div>' +
+      '<p class="quiet-note">不看、不选都可以。这里没有打卡、积分，也没有未完成提醒。</p>';
+  }
+
+  function renderDirectionPick(concept, g) {
+    const list = directionsForConcept(concept);
+    viewEl.innerHTML =
+      '<div class="page-head">' +
+        '<span class="kicker">板块三 · 行动与成长</span>' +
+        stepDots(1, 6) +
+        '<h2>你想从哪个方向开始？</h2>' +
+        '<p class="sub">这些方向来自你确认的情境与「' + esc(concept.name) + '」，只选一个开始就够。</p>' +
+      '</div>' +
+      '<div class="direction-list">' +
+        list.map(function (d, i) {
+          return '<article class="card direction">' +
+            '<div class="dir-head"><span class="dir-num">0' + (i + 1) + '</span><h3>' + esc(d.title) + '</h3></div>' +
+            '<p>' + esc(d.description) + '</p>' +
+            '<div class="dir-actions"><button class="btn btn-ghost" type="button" data-action="g-pick-direction" data-id="' + d.id + '">从这个方向看看</button></div>' +
+          '</article>';
+        }).join('') +
+      '</div>' +
+      '<div class="row-actions"><button class="btn btn-quiet" type="button" data-action="g-back-carry">先回去看看</button></div>';
+  }
+
+  function renderPracticePick(concept, g) {
+    const dir = D.directions[g.directionId];
+    if (!dir) { g.step = 'direction'; save(); render(); return; }
+    const u = ensureUnderstand(State.record);
+    const chosen = g.practices.map(function (p) { return p.id; });
 
     viewEl.innerHTML =
       '<div class="page-head">' +
         '<span class="kicker">板块三 · 行动与成长</span>' +
-        '<h2>如果愿意，可以从这里开始</h2>' +
-        '<p class="sub">' + esc(hint) + '这些是邀请，不是任务清单。你可以只看看，也可以暂时什么都不选。</p>' +
+        stepDots(2, 6) +
+        '<h2>' + esc(dir.title) + '</h2>' +
+        '<p class="sub">下面是最多三个轻量练习。可以选一个，也可以都不选。</p>' +
       '</div>' +
-      directionsHTML() +
-      '<p class="dir-note">暂时不选也完全可以。方向随时可以改，不需要给自己一个交代。</p>' +
-      (choice && direction
-        ? '<section class="card growth-panel" id="growthPanel">' +
-            '<div class="panel-head">' +
-              '<span class="kicker">你选择的方向</span>' +
-              '<h3>' + esc(direction.title) + '</h3>' +
-              (choice.status === 'paused' ? '<span class="badge">已暂停</span>' : '') +
-            '</div>' +
-            '<p>' + (active
-              ? '下面这些是可以试试的小事，不是每日任务。做与不做，都不会影响任何评价。'
-              : '这个方向现在停在这里，没有任何惩罚。你想继续时，随时可以继续。') + '</p>' +
-            (active ? tasksHTML(direction) : '') +
-            '<div class="milestone">' +
-              '<h3 style="font-size:17px">你留下的记录</h3>' +
-              logsHTML() +
-              '<h3 style="font-size:17px;margin-top:24px">成长里程碑</h3>' +
-              milestoneHTML() +
+      dir.tasks.slice(0, 3).map(function (t) {
+        const p = practiceFrom(dir, t, u);
+        const added = chosen.indexOf(p.id) > -1;
+        return '<article class="card practice-card">' +
+          '<h3>' + esc(t.title) + '</h3>' +
+          '<p class="practice-when"><span>什么时候可以试</span>' + esc(p.when) + '</p>' +
+          '<p class="practice-action"><span>具体可以做什么</span>' + esc(t.desc) + '</p>' +
+          '<p class="practice-goal"><span>练习的目的</span>' + esc(dir.title) + '：' + esc(clip(dir.description, 70)) + '</p>' +
+          '<div class="mini-actions">' +
+            (added
+              ? '<button class="btn btn-quiet" type="button" data-action="g-remove-practice" data-id="' + p.id + '">已加入，移出清单</button>'
+              : '<button class="btn btn-ghost" type="button" data-action="g-add-practice" data-id="' + p.id + '">加入「我想试试」</button>') +
+          '</div>' +
+        '</article>';
+      }).join('') +
+      '<div class="row-actions">' +
+        '<button class="btn btn-primary" type="button" data-action="g-view-list">看看我的清单</button>' +
+        '<button class="btn btn-quiet" type="button" data-action="g-back-directions">换个方向</button>' +
+      '</div>';
+  }
+
+  function renderPracticeList(concept, g) {
+    const list = g.practices;
+    viewEl.innerHTML =
+      '<div class="page-head">' +
+        '<span class="kicker">板块三 · 行动与成长</span>' +
+        stepDots(3, 6) +
+        '<h2>我想试试</h2>' +
+        '<p class="sub">这里只有你主动选进来的练习。没有每日任务，也不统计连续天数。</p>' +
+      '</div>' +
+      (list.length
+        ? list.map(function (p) {
+            return '<article class="card practice-card' + (p.status === 'paused' ? ' is-paused' : '') + '">' +
+              '<h3>' + esc(p.title) + '</h3>' +
+              '<p class="practice-when"><span>什么时候可以试</span>' + esc(p.when) + '</p>' +
+              '<p class="practice-action"><span>具体可以做什么</span>' + esc(p.action) + '</p>' +
+              (p.status === 'paused' ? '<p class="quiet-note">已暂时放下，没有任何惩罚。</p>' : '') +
+              '<div class="mini-actions">' +
+                '<button class="btn btn-ghost" type="button" data-action="g-record" data-id="' + p.id + '">记录这次尝试</button>' +
+                (p.status === 'active'
+                  ? '<button class="btn btn-quiet" type="button" data-action="g-pause-practice" data-id="' + p.id + '">暂时不做</button>'
+                  : '<button class="btn btn-quiet" type="button" data-action="g-resume-practice" data-id="' + p.id + '">重新放回</button>') +
+                '<button class="btn btn-quiet" type="button" data-action="g-ai-talk" data-id="' + p.id + '">和 AI 聊聊</button>' +
+                '<button class="btn btn-quiet" type="button" data-action="g-remove-practice" data-id="' + p.id + '">移除</button>' +
+              '</div>' +
+            '</article>';
+          }).join('')
+        : '<section class="card"><p>清单还是空的，这完全可以。你可以先去看看方向，也可以什么都不选。</p>' +
+            '<div class="row-actions"><button class="btn btn-primary" type="button" data-action="g-back-directions">看看方向</button></div></section>') +
+      '<div class="row-actions">' +
+        (list.length ? '<button class="btn btn-primary" type="button" data-action="g-to-review">回顾一下</button>' : '') +
+        '<button class="btn btn-quiet" type="button" data-action="g-back-directions">再挑一个方向</button>' +
+      '</div>';
+  }
+
+  function renderFeedbackPage(concept, g) {
+    const p = g.practices.filter(function (x) { return x.id === g.feedbackId; })[0] || null;
+    if (!p) { g.step = 'list'; save(); render(); return; }
+    const fb = e => '<button class="option-chip' + (g.feedbackChoice === e ? ' is-on' : '') + '" type="button" data-action="g-feedback-choice" data-value="' + e + '">' + esc(E.feedbackLabel[e] || e) + '</button>';
+
+    viewEl.innerHTML =
+      '<div class="page-head">' +
+        '<span class="kicker">板块三 · 行动与成长</span>' +
+        stepDots(4, 6) +
+        '<h2>这次尝试，怎么样？</h2>' +
+        '<p class="sub">' + esc(p.title) + '。没有「失败」这个选项，也没尝试不代表任何评价。</p>' +
+      '</div>' +
+      '<section class="card">' +
+        '<div class="option-list">' + ['done', 'tried', 'later', 'extra'].map(fb).join('') + '</div>' +
+        '<label for="feedbackNote">想补充一句吗？（可以跳过）</label>' +
+        '<textarea id="feedbackNote" maxlength="300" rows="3" placeholder="比如：比想象中难，但说出口之后轻了一点。">' + esc(g.feedbackNote || '') + '</textarea>' +
+        '<div class="row-actions">' +
+          '<button class="btn btn-primary" type="button" data-action="g-feedback-submit">记下这次</button>' +
+          '<button class="btn btn-quiet" type="button" data-action="g-cancel-feedback">先不记</button>' +
+        '</div>' +
+      '</section>' +
+      (g.aiReply
+        ? '<section class="card ai-reply">' +
+            '<p class="quiet-note">AI 的回应</p>' +
+            '<p>' + esc(g.aiReply) + '</p>' +
+            '<div class="row-actions">' +
+              '<button class="btn btn-quiet" type="button" data-action="g-alt-practice">看看替代的练习</button>' +
+              '<button class="btn btn-quiet" type="button" data-action="g-to-list">回到清单</button>' +
             '</div>' +
           '</section>'
         : '') +
-  '<p class="disclaimer">这一板块不设打卡、积分、等级或排行榜。任务可以跳过，方向可以暂停，里程碑只有你确认后才会保存。</p>';
+      (g.altOpen ? renderAltPractices(concept, g) : '');
+  }
+
+  function renderAltPractices(concept, g) {
+    const list = directionsForConcept(concept).filter(function (d) { return d.id !== g.directionId; });
+    const dir = list[0] || directionsForConcept(concept)[0];
+    const u = ensureUnderstand(State.record);
+    return '<section class="card">' +
+      '<h3>可以换成这些试试</h3>' +
+      '<p class="quiet-note">这些不是自动派给你的任务。愿意的话，再决定要不要加进清单。</p>' +
+      dir.tasks.slice(0, 2).map(function (t) {
+        const p = practiceFrom(dir, t, u);
+        const added = g.practices.some(function (x) { return x.id === p.id; });
+        return '<div class="alt-practice">' +
+          '<h4>' + esc(t.title) + '</h4>' +
+          '<p>' + esc(t.desc) + '</p>' +
+          (added
+            ? '<p class="quiet-note">已在清单里</p>'
+            : '<button class="btn btn-ghost" type="button" data-action="g-add-alt" data-dir="' + dir.id + '" data-task="' + t.id + '">加入「我想试试」</button>') +
+        '</div>';
+      }).join('') +
+    '</section>';
+  }
+
+  function renderReviewPage(concept, g, u) {
+    const logs = [];
+    g.practices.forEach(function (p) {
+      (p.logs || []).forEach(function (l) { logs.push({ p: p, log: l }); });
+    });
+    const helped = logs.filter(function (x) { return x.log.feedback === 'done'; }).length;
+    const reviewed = g.reminder && g.reminder.confirmed;
+    const summary = logs.length
+      ? '你一共留下 ' + logs.length + ' 条记录，其中 ' + helped + ' 次觉得有帮助。' +
+        (logs.length ? '最近一次记录是：' + (E.feedbackLabel[logs[logs.length - 1].log.feedback] || '一次尝试') + '。' : '')
+      : '你还没有记录尝试。这不影响什么，想试的时候再试。';
+
+    const draft = g.reminder && g.reminder.text
+      ? g.reminder.text
+      : '当' + whenPhrase((u.situation && u.situation.answer) || '') + '，我可以先停一下，再决定怎么回应。';
+
+    viewEl.innerHTML =
+      '<div class="page-head">' +
+        '<span class="kicker">板块三 · 行动与成长</span>' +
+        stepDots(5, 6) +
+        '<h2>回头看一眼</h2>' +
+      '</div>' +
+      '<section class="card">' +
+        '<h3>这段时间</h3>' +
+        '<p>' + esc(summary) + '</p>' +
+        (logs.length
+          ? '<ul class="timeline">' + logs.slice(-5).map(function (x) {
+              return '<li class="log-item"><span class="log-time">' + esc(fmt(x.log.at)) + '</span>' +
+                '<span class="log-body"><strong>' + esc(E.feedbackLabel[x.log.feedback] || '记录') + '</strong>' +
+                (x.log.note ? '<em>' + esc(x.log.note) + '</em>' : '') + '</span></li>';
+            }).join('') + '</ul>'
+          : '') +
+      '</section>' +
+      '<section class="card reminder-card">' +
+        '<h3>给自己留一句提醒</h3>' +
+        '<p class="quiet-note">这是草稿，只有你确认后才会保存。之后随时可以改。</p>' +
+        '<input id="reminderInput" maxlength="120" value="' + esc(draft) + '">' +
+        '<div class="row-actions">' +
+          '<button class="btn btn-primary" type="button" data-action="g-save-reminder">' + (reviewed ? '更新这句提醒' : '确认并保存这句提醒') + '</button>' +
+          '<button class="btn btn-quiet" type="button" data-action="g-to-list">回到清单</button>' +
+        '</div>' +
+        (reviewed ? '<p class="quiet-note">已保存：' + esc(g.reminder.text) + '</p>' : '') +
+        '<p class="quiet-note">完成或收起练习，不代表问题已经解决，也不代表你必须做完。</p>' +
+      '</section>';
+  }
+
+  /* ---------------- 板块三：AI 对话（带入当前情境与练习） ---------------- */
+
+  function aiTalkModal(practice) {
+    const record = State.record;
+    const u = ensureUnderstand(record);
+    const concept = conceptOf(record);
+    State.aiTalk = { practice: practice, messages: [] };
+    const context = [
+      '概念：' + (concept ? concept.name : ''),
+      '用户确认的情境：' + ((u.situation && u.situation.summary) || ''),
+      '练习：' + (practice ? practice.title : ''),
+      '练习内容：' + (practice ? practice.action : '')
+    ].join('\n');
+
+    openModal(
+      '<div class="modal-head"><h2>和 AI 聊聊这次尝试</h2><button class="btn btn-quiet" type="button" data-action="close-modal">关闭</button></div>' +
+      '<p class="quiet-note">已经带入你确认的情境和练习，不需要重复说明。</p>' +
+      '<div class="ai-talk-log" id="aiTalkLog"><p class="quiet-note">想说什么都可以。AI 会先回应你的情况，再问你是否需要建议。</p></div>' +
+      '<form data-form="ai-talk">' +
+        '<textarea name="say" maxlength="300" rows="2" placeholder="比如：我试了，但说到一半就卡住了。"></textarea>' +
+        '<div class="row-actions"><button class="btn btn-primary" type="submit">发送</button></div>' +
+      '</form>' +
+      '<p class="quiet-note" data-context="' + esc(context) + '"></p>'
+    );
+  }
+
+  function renderAITalk() {
+    const root = document.getElementById('aiTalkLog');
+    if (!root || !State.aiTalk) return;
+    root.innerHTML = State.aiTalk.messages.map(function (m) {
+      return '<div class="ai-msg ' + (m.role === 'user' ? 'is-user' : 'is-ai') + '">' + esc(m.content) + '</div>';
+    }).join('') || '<p class="quiet-note">想说什么都可以。</p>';
+    root.scrollTop = root.scrollHeight;
   }
 
   /* ---------------- 加载 / 错误 ---------------- */
@@ -722,36 +1061,6 @@
       if (el) el.textContent = messages[i];
     }, 820);
     return function stop() { window.clearInterval(timer); };
-  }
-
-  function delay(ms) {
-    return new Promise(function (resolve) { window.setTimeout(resolve, ms); });
-  }
-
-  function showLoader(messages, done) {
-    const stop = startLoader(messages);
-    window.setTimeout(function () {
-      stop();
-      if (State.failNext) {
-        State.failNext = false;
-        renderFailure();
-      } else {
-        done();
-      }
-    }, 2050);
-  }
-
-  function renderFailure() {
-    viewEl.innerHTML = '<article class="card error-card">' +
-      '<span class="kicker">生成中断</span>' +
-      '<h2>这次没有生成成功</h2>' +
-      '<p>已经完成的档案还在，不需要重新填写。</p>' +
-      '<div class="row-actions">' +
-        '<button class="btn btn-primary" type="button" data-action="retry">再试一次</button>' +
-        '<button class="btn btn-quiet" type="button" data-action="go-home">先回首页</button>' +
-      '</div>' +
-    '</article>';
-    announce('生成失败，可以重试');
   }
 
   function markAIFallback() {
@@ -784,13 +1093,8 @@
 
   function startDraft(raw) {
     State.record = E.buildDraft(raw);
-    State.report = null;
-    State.choice = null;
-    State.logs = [];
-    State.milestone = null;
-    State.depth = 'present';
-    State.originsText = '';
-    State.pendingFeedback = null;
+    State.record.understand = null;
+    State.record.growth = null;
     save();
     State.view = 'identify';
     render();
@@ -931,66 +1235,50 @@
     const record = State.record;
     if (!record) return;
     State.record = E.chooseConcept(record, conceptId);
-    State.report = null;
-    State.choice = null;
-    State.logs = [];
-    State.milestone = null;
-    State.depth = 'present';
-    State.originsText = '';
+    State.record.understand = null;
+    State.record.growth = null;
     save();
     goView('understand');
     announce('已选定这个概念，进入理解与探索');
   }
 
-  function doReport() {
-    State.retry = 'report';
-    const originsInput = document.getElementById('originsInput');
-    if (originsInput) State.originsText = originsInput.value;
-    const messages = ['正在重新读一遍你的档案', '把概念放回你的描述里', '整理哪些是事实，哪些是解释'];
-
-    const apply = function (report) {
-      State.report = report;
+  /**
+   * 板块三：把用户的反馈交给模型，先回应情况，再决定是否提建议。
+   * 失败时保留上一步的本地回应，不阻塞流程。
+   */
+  function sendFeedbackToAI(practice, choice, note) {
+    if (!AI || !AI.available() || location.protocol === 'file:') return;
+    const record = State.record;
+    const concept = conceptOf(record);
+    const u = ensureUnderstand(record);
+    const label = E.feedbackLabel[choice] || '一次尝试';
+    const messages = [
+      {
+        role: 'system',
+        content: [
+          '你是「给痛苦一个名字」的陪伴助手。用户刚记录了一次练习尝试。',
+          '先用一到两句回应他的情况，说清楚你听到了什么；不要评判，不把没尝试说成失败。',
+          '如果用户表达出想调整的意愿，再问一句是否需要替代方案；不要自动派发新任务，不要一次给多条建议。',
+          '不提诊断，不推断伴侣的动机，不超过 120 字。'
+        ].join('\n')
+      },
+      {
+        role: 'user',
+        content: [
+          '概念：' + (concept ? concept.name : '未命名'),
+          '确认的情境：' + ((u.situation && u.situation.summary) || '未提供'),
+          '练习：' + practice.title,
+          '这次的结果：' + label,
+          note ? '用户补充：' + note : '用户没有补充文字'
+        ].join('\n')
+      }
+    ];
+    AI.chat(messages, 300).then(function (reply) {
+      const g = ensureGrowth(State.record);
+      g.aiReply = reply;
       save();
-      State.view = 'understand';
-      render();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    if (State.failNext) {
-      showLoader(messages, function () {});
-      return;
-    }
-
-    if (!AI || !AI.available() || location.protocol === 'file:') {
-      showLoader(messages, function () {
-        apply(E.buildReport(State.record, State.depth, State.originsText));
-      });
-      return;
-    }
-
-    const stop = startLoader(messages);
-    Promise.all([AI.report(State.record, State.depth, State.originsText), delay(1600)])
-      .then(function (out) { stop(); apply(out[0]); })
-      .catch(function () {
-        stop();
-        markAIFallback();
-        toast('模型暂时不可用，已用本地规则生成报告');
-        apply(E.buildReport(State.record, State.depth, State.originsText));
-      });
-  }
-
-  function doMilestone() {
-    State.retry = 'milestone';
-    if (!State.logs.length) { toast('先留下一条记录'); return; }
-    const direction = State.choice ? D.directions[State.choice.directionId] : null;
-    showLoader(['正在回看你留下的记录', '只把真实发生过的事写进去'], function () {
-      State.milestone = E.buildMilestone(State.logs, direction);
-      save();
-      State.view = 'growth';
-      render();
-      const panel = document.getElementById('growthPanel');
-      if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
+      if (g.step === 'feedback') render();
+    }).catch(function () { /* 保留本地回应 */ });
   }
 
   /* ---------------- 弹层 ---------------- */
@@ -1045,8 +1333,8 @@
       '<div style="margin-top:16px">' +
         '<div class="data-row"><span>识别结果</span><span>' + esc(concept ? concept.name + '（' + r.confidence + '）' : '尚未可靠命名') + '</span></div>' +
         '<div class="data-row"><span>创建时间</span><span>' + esc(fmt(r.createdAt)) + '</span></div>' +
-        '<div class="data-row"><span>理解报告</span><span>' + (State.report ? esc(DEPTH_LABEL[State.report.depth] || '已生成') : '未生成') + '</span></div>' +
-        '<div class="data-row"><span>成长记录</span><span>' + State.logs.length + ' 条' + (State.milestone ? ' · 里程碑' + (State.milestone.status === 'confirmed' ? '已确认' : '待确认') : '') + '</span></div>' +
+        '<div class="data-row"><span>理解进度</span><span>' + esc(understandProgress(r)) + '</span></div>' +
+        '<div class="data-row"><span>练习记录</span><span>' + growthLogCount(r) + ' 条</span></div>' +
       '</div>' +
       '<div class="row-actions">' +
         '<button class="btn btn-ghost" type="button" data-action="close-modal">关闭</button>' +
@@ -1093,7 +1381,7 @@
         const target = el.getAttribute('data-target');
         if (target === 'identify' && State.record) { goView('identify'); break; }
         if (target === 'understand' && State.record && State.record.confirmed) { goView('understand'); break; }
-        if (target === 'growth' && State.report) { goView('growth'); break; }
+        if (target === 'growth' && State.record && State.record.confirmed) { goView('growth'); break; }
         if (target === 'identify' && !State.record) { goView('home'); break; }
         break;
       }
@@ -1140,109 +1428,250 @@
         break;
       case 'resume':
         if (!State.record) { goView('home'); break; }
-        goView((State.report || State.record.confirmed) ? 'understand' : 'identify');
-        break;
-      case 'depth': {
-        State.depth = el.getAttribute('data-depth') || 'present';
-        const ta = document.getElementById('originsInput');
-        if (ta) State.originsText = ta.value;
-        render();
-        break;
-      }
-      case 'generate-report':
-        doReport();
-        break;
-      case 'reset-report':
-        State.report = null;
-        save();
-        render();
+        goView((State.record && State.record.confirmed) ? 'understand' : 'identify');
         break;
       case 'growth':
         goView('growth');
         break;
-      case 'pick-direction':
-        State.choice = {
-          directionId: el.getAttribute('data-id'),
-          status: 'active',
-          selectedAt: Date.now()
-        };
-        State.pendingFeedback = null;
+
+      /* ---- 板块二：五步流程 ---- */
+      case 'u-like': {
+        const u = ensureUnderstand(State.record);
+        u.resonance = 'like';
+        u.step = 'concept';
         save();
         render();
-        (function () {
-          const panel = document.getElementById('growthPanel');
-          if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        })();
-        announce('已设为当前方向，可以随时暂停');
-        break;
-      case 'pause-direction':
-        if (State.choice) {
-          State.choice.status = 'paused';
-          State.pendingFeedback = null;
-          save();
-          render();
-          announce('方向已暂停，没有产生任何负面记录');
-        }
-        break;
-      case 'resume-direction':
-        if (State.choice) {
-          State.choice.status = 'active';
-          save();
-          render();
-          announce('方向已继续');
-        }
-        break;
-      case 'feedback':
-        State.pendingFeedback = {
-          taskId: el.getAttribute('data-task'),
-          feedback: el.getAttribute('data-feedback')
-        };
-        render();
-        break;
-      case 'cancel-log':
-        State.pendingFeedback = null;
-        render();
-        break;
-      case 'save-log': {
-        const input = document.getElementById('reflectionInput');
-        const reflection = input ? input.value.trim() : '';
-        if (!State.pendingFeedback || !State.choice) break;
-        State.logs.push({
-          id: 'log_' + Date.now().toString(36),
-          directionId: State.choice.directionId,
-          taskId: State.pendingFeedback.taskId,
-          feedback: State.pendingFeedback.feedback,
-          reflection: reflection,
-          createdAt: Date.now()
-        });
-        State.pendingFeedback = null;
-        save();
-        render();
-        announce('记录已保存');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         break;
       }
-      case 'generate-milestone':
-        doMilestone();
+      case 'u-unlike':
+        State.record.confirmed = false;
+        State.record.primary = null;
+        State.record.understand = null;
+        save();
+        render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        announce('已返回概念选择');
         break;
-      case 'confirm-milestone':
-        if (State.milestone) {
-          State.milestone.status = 'confirmed';
-          State.milestone.confirmedAt = Date.now();
-          save();
-          render();
-          announce('里程碑已确认保存');
-        }
-        break;
-      case 'discard-milestone':
-        State.milestone = null;
+      case 'u-back-candidates':
+        State.record.confirmed = false;
+        State.record.primary = null;
+        State.record.understand = null;
         save();
         render();
         break;
-      case 'retry':
-        if (State.retry === 'report') doReport();
-        else if (State.retry === 'milestone') doMilestone();
-        else goView('home');
+      case 'u-to-scene':
+        goUStep('scene');
         break;
+      case 'u-scene-skip': {
+        const u = ensureUnderstand(State.record);
+        const concept = conceptOf(State.record);
+        const list = sceneQuestions(concept);
+        const index = Math.min(u.scene.index, list.length - 1);
+        u.scene.answers[index] = { question: list[index], text: '', skipped: true };
+        u.scene.index = index + 1;
+        if (u.scene.index >= list.length) { requestInterpret(''); break; }
+        save();
+        render();
+        break;
+      }
+      case 'u-interpret-ok':
+        goUStep('situation');
+        break;
+      case 'u-interpret-fix': {
+        const u = ensureUnderstand(State.record);
+        u.fixing = true;
+        save();
+        render();
+        break;
+      }
+      case 'u-interpret-retry': {
+        const input = document.getElementById('correctionInput');
+        requestInterpret(input ? input.value.trim() : '');
+        break;
+      }
+      case 'u-situation-pick': {
+        const u = ensureUnderstand(State.record);
+        u.situation = u.situation || {};
+        u.situation.answer = el.getAttribute('data-text') || '';
+        u.situation.summary = '';
+        save();
+        render();
+        break;
+      }
+      case 'u-situation-retry': {
+        const u = ensureUnderstand(State.record);
+        u.situation.summary = '';
+        u.situation.confirmed = false;
+        save();
+        render();
+        break;
+      }
+      case 'u-situation-confirm': {
+        const u = ensureUnderstand(State.record);
+        if (!u.situation || !u.situation.summary) break;
+        u.situation.confirmed = true;
+        u.step = 'summary';
+        ensureGrowth(State.record).step = 'carry';
+        save();
+        render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        break;
+      }
+      case 'u-to-growth':
+        goView('growth');
+        break;
+      case 'u-back-scene':
+        goUStep('scene');
+        break;
+
+      /* ---- 板块三：六步流程 ---- */
+      case 'g-start':
+        goGStep('direction');
+        break;
+      case 'g-later':
+        goGStep('list');
+        break;
+      case 'g-pick-direction': {
+        const g = ensureGrowth(State.record);
+        g.directionId = el.getAttribute('data-id');
+        g.step = 'practice';
+        save();
+        render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        break;
+      }
+      case 'g-add-practice': {
+        const g = ensureGrowth(State.record);
+        const dir = D.directions[g.directionId];
+        const id = el.getAttribute('data-id') || '';
+        if (!dir) break;
+        const taskId = id.split(':')[1];
+        const task = dir.tasks.filter(function (t) { return t.id === taskId; })[0];
+        if (!task) break;
+        if (!g.practices.some(function (p) { return p.id === id; })) {
+          g.practices.push(practiceFrom(dir, task, ensureUnderstand(State.record)));
+          save();
+          render();
+          announce('已加入「我想试试」');
+        }
+        break;
+      }
+      case 'g-remove-practice': {
+        const g = ensureGrowth(State.record);
+        const id = el.getAttribute('data-id');
+        g.practices = g.practices.filter(function (p) { return p.id !== id; });
+        save();
+        render();
+        break;
+      }
+      case 'g-pause-practice':
+      case 'g-resume-practice': {
+        const g = ensureGrowth(State.record);
+        const id = el.getAttribute('data-id');
+        g.practices.forEach(function (p) {
+          if (p.id === id) p.status = action === 'g-pause-practice' ? 'paused' : 'active';
+        });
+        save();
+        render();
+        break;
+      }
+      case 'g-view-list':
+      case 'g-to-list':
+        goGStep('list');
+        break;
+      case 'g-back-directions':
+        goGStep('direction');
+        break;
+      case 'g-back-carry':
+        goGStep('carry');
+        break;
+      case 'g-record': {
+        const g = ensureGrowth(State.record);
+        g.feedbackId = el.getAttribute('data-id');
+        g.feedbackChoice = '';
+        g.feedbackNote = '';
+        g.aiReply = '';
+        g.altOpen = false;
+        g.step = 'feedback';
+        save();
+        render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        break;
+      }
+      case 'g-feedback-choice': {
+        const g = ensureGrowth(State.record);
+        g.feedbackChoice = el.getAttribute('data-value');
+        save();
+        render();
+        break;
+      }
+      case 'g-feedback-submit': {
+        const g = ensureGrowth(State.record);
+        const note = document.getElementById('feedbackNote');
+        const text = note ? note.value.trim() : '';
+        const practice = g.practices.filter(function (p) { return p.id === g.feedbackId; })[0];
+        if (!practice) break;
+        g.feedbackNote = text;
+        const choice = g.feedbackChoice || 'extra';
+        practice.logs = practice.logs || [];
+        practice.logs.push({ at: Date.now(), feedback: choice, note: text });
+        g.aiReply = '已记下。' + (choice === 'done' ? '有帮助的部分，值得记住它当时是怎么发生的。' :
+          choice === 'tried' ? '不太适合也很重要，它说明这个方式和你现在的处境不完全匹配。' :
+          choice === 'later' ? '这次没能尝试，不代表任何评价，也不需要补交。' :
+          '谢谢你愿意补充，这一段会被留在你的记录里。');
+        save();
+        render();
+        sendFeedbackToAI(practice, choice, text);
+        break;
+      }
+      case 'g-cancel-feedback':
+        goGStep('list');
+        break;
+      case 'g-alt-practice': {
+        const g = ensureGrowth(State.record);
+        g.altOpen = true;
+        save();
+        render();
+        break;
+      }
+      case 'g-add-alt': {
+        const g = ensureGrowth(State.record);
+        const dir = D.directions[el.getAttribute('data-dir')];
+        const taskId = el.getAttribute('data-task');
+        if (!dir) break;
+        const task = dir.tasks.filter(function (t) { return t.id === taskId; })[0];
+        if (!task) break;
+        const p = practiceFrom(dir, task, ensureUnderstand(State.record));
+        if (!g.practices.some(function (x) { return x.id === p.id; })) {
+          g.practices.push(p);
+          save();
+          render();
+          announce('已加入「我想试试」');
+        }
+        break;
+      }
+      case 'g-to-review':
+        goGStep('review');
+        break;
+      case 'g-save-reminder': {
+        const g = ensureGrowth(State.record);
+        const input = document.getElementById('reminderInput');
+        const text = input ? input.value.trim() : '';
+        if (!text) { toast('可以写一句，或者先不保存'); break; }
+        g.reminder = { text: text, confirmed: true, updatedAt: Date.now() };
+        save();
+        render();
+        announce('提醒已保存');
+        break;
+      }
+      case 'g-ai-talk': {
+        const g = ensureGrowth(State.record);
+        const practice = g.practices.filter(function (p) { return p.id === el.getAttribute('data-id'); })[0];
+        aiTalkModal(practice || null);
+        break;
+      }
+
       case 'open-privacy':
         privacyModal();
         break;
@@ -1332,6 +1761,80 @@
       return;
     }
 
+    if (type === 'u-scene') {
+      const record = State.record;
+      const concept = conceptOf(record);
+      if (!record || !concept) return;
+      const u = ensureUnderstand(record);
+      const list = sceneQuestions(concept);
+      const index = Math.min(u.scene.index, list.length - 1);
+      const text = form.elements.answer.value.trim();
+      if (!text) {
+        toast('可以写一句，或点「这题跳过」');
+        return;
+      }
+      u.scene.answers[index] = { question: list[index], text: text, skipped: false };
+      u.scene.index = index + 1;
+      if (u.scene.index >= list.length) { requestInterpret(''); return; }
+      save();
+      render();
+      announce('已记下，继续下一个问题');
+      return;
+    }
+
+    if (type === 'u-situation') {
+      const record = State.record;
+      if (!record) return;
+      const u = ensureUnderstand(record);
+      const typed = form.elements.answer.value.trim();
+      const answer = typed || (u.situation && u.situation.answer) || '';
+      if (!answer) {
+        toast('可以选一个情境，或自己写一句');
+        return;
+      }
+      u.situation = u.situation || {};
+      u.situation.answer = answer;
+      u.situation.summary = buildSituationSummary(u, conceptOf(record));
+      save();
+      render();
+      announce('已形成情境总结，你可以确认或修改');
+      return;
+    }
+
+    if (type === 'ai-talk') {
+      const text = form.elements.say.value.trim();
+      if (!text) return;
+      if (!State.aiTalk) return;
+      State.aiTalk.messages.push({ role: 'user', content: text });
+      renderAITalk();
+      form.reset();
+      const record = State.record;
+      const u = ensureUnderstand(record);
+      const concept = conceptOf(record);
+      const practice = State.aiTalk.practice;
+      const messages = [
+        {
+          role: 'system',
+          content: [
+            '你是「给痛苦一个名字」的陪伴助手，正在和用户聊一次具体的练习尝试。',
+            '先回应他刚说的内容，再决定是否需要提问或给建议；不要评判，不推断伴侣的动机。',
+            '如果用户没有主动要建议，不要直接派发新任务；一次最多一个建议，不超过 120 字。',
+            '概念：' + (concept ? concept.name : '未命名'),
+            '确认的情境：' + ((u.situation && u.situation.summary) || '未提供'),
+            '练习：' + (practice ? practice.title + '（' + practice.action + '）' : '未指定')
+          ].join('\n')
+        }
+      ].concat(State.aiTalk.messages);
+      AI.chat(messages, 400).then(function (reply) {
+        State.aiTalk.messages.push({ role: 'assistant', content: reply });
+        renderAITalk();
+      }).catch(function () {
+        State.aiTalk.messages.push({ role: 'assistant', content: '模型暂时不可用。你说的这些已经留在这条记录里，可以稍后再试。' });
+        renderAITalk();
+      });
+      return;
+    }
+
     if (type === 'more') {
       const extra = form.elements.extra.value.trim();
       if (!extra) {
@@ -1353,7 +1856,6 @@
 
   document.addEventListener('input', function (e) {
     if (e.target.id === 'rawInput') updateCounter();
-    if (e.target.id === 'originsInput') State.originsText = e.target.value;
   });
 
   document.addEventListener('keydown', function (e) {

@@ -48,9 +48,10 @@ window.Engine = (function () {
   ];
 
   const FEEDBACK_LABEL = {
-    done: '完成了，感觉还不错',
-    tried: '试了，但没有想象中容易',
-    later: '暂时不想做'
+    done: '试过了，对我有帮助',
+    tried: '试过了，但不太适合',
+    later: '这次没能尝试',
+    extra: '我想补充发生了什么'
   };
 
   function unique(arr) {

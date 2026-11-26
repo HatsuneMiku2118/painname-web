@@ -80,6 +80,12 @@ function validate(data) {
       problems.push(at + ' review_status 只能是 ' + REVIEW_STATUS.join(' / '));
     }
     if (!Array.isArray(c.nearby)) problems.push(at + ' nearby 必须是数组');
+    if (!Array.isArray(c.sceneQuestions) || c.sceneQuestions.length < 2) {
+      problems.push(at + ' sceneQuestions 至少需要 2 条（板块二第 3 页的引导问题）');
+    }
+    if (!Array.isArray(c.situationOptions) || c.situationOptions.length < 2) {
+      problems.push(at + ' situationOptions 至少需要 2 条（板块二第 5 页的情境选项）');
+    }
     if (c.evidence !== undefined) {
       if (!Array.isArray(c.evidence) || !c.evidence.length) {
         problems.push(at + ' evidence 如果存在必须是非空数组');

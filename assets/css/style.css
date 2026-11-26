@@ -1274,3 +1274,124 @@ details.acc > summary:focus-visible { outline: 2px solid var(--accent); outline-
     transition-duration: .001ms !important;
   }
 }
+
+/* ---------- 板块二：五步流程 ---------- */
+
+.step-dots { display: flex; gap: 6px; margin: 10px 0 4px; }
+.step-dots .dot {
+  width: 22px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line-strong);
+  opacity: .55;
+}
+.step-dots .dot.is-done { background: var(--accent-2); opacity: .8; }
+.step-dots .dot.is-on { background: var(--accent); opacity: 1; }
+
+.resonance-card { padding: 32px 30px; }
+.resonance-text {
+  font-family: var(--serif);
+  font-size: 21px;
+  line-height: 1.75;
+  margin: 0 0 16px;
+  color: var(--ink);
+}
+
+.concept-block h3 { margin: 26px 0 8px; font-size: 15px; letter-spacing: .04em; color: var(--accent-deep); }
+.concept-block h3:first-child { margin-top: 0; }
+.concept-block p { margin: 0; color: var(--ink-2); line-height: 1.85; }
+
+.scene-card { padding: 26px 24px; }
+.q-index { margin: 0 0 8px; font-size: 12.5px; color: var(--muted); letter-spacing: .06em; }
+.scene-q { margin: 0 0 18px; font-size: 19px; line-height: 1.7; font-family: var(--serif); }
+.scene-card textarea,
+.interpret-card textarea,
+.card textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #FFFDFA;
+  font: inherit;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--ink);
+  resize: vertical;
+}
+.scene-card textarea:focus,
+.interpret-card textarea:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent-2); }
+
+.interpret-card h3 { margin: 22px 0 10px; font-size: 15px; color: var(--accent-deep); }
+.interpret-card h3:first-child { margin-top: 0; }
+
+.summary-card { padding: 28px 26px; }
+.summary-card h3 { font-family: var(--serif); font-size: 22px; margin: 6px 0 8px; }
+
+.option-list { display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 20px; }
+.option-chip.is-on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-deep); }
+
+/* ---------- 板块三：练习卡与清单 ---------- */
+
+.carry-card { padding: 26px 24px; }
+.direction-list { display: grid; gap: 16px; }
+.practice-card { padding: 24px 22px; }
+.practice-card h3 { margin: 0 0 14px; font-size: 18px; font-family: var(--serif); }
+.practice-card.is-paused { opacity: .72; }
+.practice-when,
+.practice-action,
+.practice-goal {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--ink-2);
+}
+.practice-when span,
+.practice-action span,
+.practice-goal span {
+  display: block;
+  font-size: 12px;
+  letter-spacing: .08em;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.mini-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.mini-actions .btn { padding: 8px 14px; font-size: 13px; }
+
+.ai-reply { padding: 24px 22px; border-color: var(--sage-soft); background: rgba(233, 239, 229, .45); }
+.alt-practice { padding: 16px 0; border-top: 1px dashed var(--line); }
+.alt-practice h4 { margin: 0 0 6px; font-size: 15px; }
+.alt-practice p { margin: 0 0 10px; font-size: 14px; color: var(--ink-2); line-height: 1.75; }
+
+.reminder-card { padding: 26px 24px; }
+.reminder-card input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #FFFDFA;
+  font: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  margin: 6px 0 16px;
+}
+
+.ai-talk-log {
+  max-height: 44vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0;
+  padding: 4px;
+}
+.ai-msg {
+  max-width: 88%;
+  padding: 11px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+.ai-msg.is-user { align-self: flex-end; background: var(--accent-soft); color: var(--accent-deep); }
+.ai-msg.is-ai { align-self: flex-start; background: var(--paper-2); border: 1px solid var(--line); }
+

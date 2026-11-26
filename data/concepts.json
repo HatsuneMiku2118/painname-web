@@ -256,7 +256,17 @@
         "d_grounding",
         "d_name_feeling"
       ],
-      "review_status": "pending_review"
+      "review_status": "pending_review",
+      "sceneQuestions": [
+        "最近一次反复回想，是在什么事之后开始的？",
+        "你通常在什么时候想得最多？（比如晚上、一个人待着、看到某个东西）",
+        "想的时候，你是在找答案，还是在设想最坏的情况？"
+      ],
+      "situationOptions": [
+        "一个人待着、没有别的事可分心时",
+        "晚上躺下、准备睡觉时",
+        "看到和那件事有关的人或消息时"
+      ]
     },
     {
       "id": "attachment_anxiety",
@@ -429,7 +439,17 @@
         "d_ask_not_guess",
         "d_expression"
       ],
-      "review_status": "pending_review"
+      "review_status": "pending_review",
+      "sceneQuestions": [
+        "最近一次因为对方的回应而不安，具体发生了什么？",
+        "那时候你做了什么？是一直等、发消息，还是反复看记录？",
+        "对方怎样的回应会让你安心一点？"
+      ],
+      "situationOptions": [
+        "消息很久没有回复时",
+        "对方语气变冷、回复变短时",
+        "对方说要忙一段时间、联系会变少时"
+      ]
     },
     {
       "id": "rejection_sensitivity",
@@ -566,7 +586,17 @@
         "d_fact_or_fear",
         "d_ask_not_guess"
       ],
-      "review_status": "pending_review"
+      "review_status": "pending_review",
+      "sceneQuestions": [
+        "最近一次觉得自己被拒绝或被嫌弃，是哪个细节让你这么觉得？",
+        "你当时的反应是靠近确认，还是退开？",
+        "事后你去确认过，还是自己消化了？"
+      ],
+      "situationOptions": [
+        "消息被已读不回时",
+        "对方没有主动打招呼时",
+        "准备提出一个请求之前"
+      ]
     },
     {
       "id": "relational_uncertainty",
@@ -697,7 +727,17 @@
         "d_boundary",
         "d_grounding"
       ],
-      "review_status": "pending_review"
+      "review_status": "pending_review",
+      "sceneQuestions": [
+        "你们现在的关系，哪些部分是你确定的，哪些还没有答案？",
+        "你有没有直接问过对方？如果没问，是什么让你没问？",
+        "不确定的时候，你一般会怎么做？"
+      ],
+      "situationOptions": [
+        "对方时冷时热、态度不稳定时",
+        "关系迟迟没有明确的定义时",
+        "对方谈到未来却没有把你放进去时"
+      ]
     },
     {
       "id": "self_blame",
@@ -825,7 +865,17 @@
         "d_expression",
         "d_fact_or_fear"
       ],
-      "review_status": "pending_review"
+      "review_status": "pending_review",
+      "sceneQuestions": [
+        "最近一次把问题算在自己头上，具体是哪件事？",
+        "你怪自己的是什么？是性格，还是某个具体做法？",
+        "如果换成朋友遇到同样的事，你会怎么跟他说？"
+      ],
+      "situationOptions": [
+        "争吵结束、一个人回想时",
+        "对方明显冷淡下来时",
+        "某件事没有做好之后"
+      ]
     },
     {
       "id": "breakup_identity",
@@ -953,7 +1003,17 @@
         "d_allow_grief",
         "d_grounding"
       ],
-      "review_status": "pending_review"
+      "review_status": "pending_review",
+      "sceneQuestions": [
+        "关系结束多久了？现在最让你不适应的是什么？",
+        "有哪些部分是你们在一起时才有、现在空出来的？",
+        "最近有没有一件是你自己想做、和对方无关的事？"
+      ],
+      "situationOptions": [
+        "周末一个人待着时",
+        "路过一起去过的地方时",
+        "别人问起近况和感情时"
+      ]
     },
     {
       "id": "emotional_granularity",
@@ -1096,7 +1156,17 @@
         "d_grounding",
         "d_expression"
       ],
-      "review_status": "pending_review"
+      "review_status": "pending_review",
+      "sceneQuestions": [
+        "最近一次觉得难受，如果用三个词形容，会是哪三个？",
+        "那种感受在身体哪个位置最明显？",
+        "事后你更清楚它是什么了吗？"
+      ],
+      "situationOptions": [
+        "被问到「你怎么了」时",
+        "情绪突然上来、说不清原因时",
+        "事情过去之后再回想时"
+      ]
     },
     {
       "id": "demand_withdraw",
@@ -1231,7 +1301,17 @@
         "d_ask_not_guess",
         "d_boundary"
       ],
-      "review_status": "pending_review"
+      "review_status": "pending_review",
+      "sceneQuestions": [
+        "最近一次争吵或关系讨论，是谁先想谈清楚的？",
+        "你做了什么？对方怎么回应？",
+        "最后是讨论解决了，还是暂时停下、之后又重复？"
+      ],
+      "situationOptions": [
+        "对方突然沉默、不回应时",
+        "对方说「没什么好说」时",
+        "问题一直没有结论、被搁置时"
+      ]
     },
     {
       "id": "self_silencing",
@@ -1391,7 +1471,17 @@
         "d_reconnect_self",
         "d_boundary"
       ],
-      "review_status": "pending_review"
+      "review_status": "pending_review",
+      "sceneQuestions": [
+        "最近一次你有话没说，是在什么场合？",
+        "你当时担心说出来会发生什么？",
+        "没说出口之后，那些话去哪了？"
+      ],
+      "situationOptions": [
+        "担心破坏气氛时",
+        "对方情绪不好、不想再添事时",
+        "准备提出自己的需求之前"
+      ]
     },
     {
       "id": "worry",
@@ -1533,7 +1623,17 @@
         "d_grounding",
         "d_ask_not_guess"
       ],
-      "review_status": "pending_review"
+      "review_status": "pending_review",
+      "sceneQuestions": [
+        "最近让你担心的事，具体是什么？它还没发生吗？",
+        "你最怕的结果是什么？",
+        "为了预防，你已经做了什么准备？"
+      ],
+      "situationOptions": [
+        "结果还没出来、只能等的时候",
+        "对方晚归、联系不上时",
+        "事情临近、时间越来越近时"
+      ]
     },
     {
       "id": "shame",
@@ -1698,7 +1798,17 @@
         "d_expression",
         "d_reconnect_self"
       ],
-      "review_status": "pending_review"
+      "review_status": "pending_review",
+      "sceneQuestions": [
+        "最近一次觉得「是我这个人有问题」，是因为什么？",
+        "当时身体有什么反应？（比如发热、想消失、想躲起来）",
+        "那之后你有没有跟人说起过？"
+      ],
+      "situationOptions": [
+        "被当众指出问题或说错话之后",
+        "被人夸、被注视的时候",
+        "事后一个人回想那个场面时"
+      ]
     },
     {
       "id": "loneliness",
@@ -1841,7 +1951,17 @@
         "d_expression",
         "d_general"
       ],
-      "review_status": "pending_review"
+      "review_status": "pending_review",
+      "sceneQuestions": [
+        "最近一次觉得没人懂，是在什么场景？",
+        "身边有人吗？你试着说过吗？",
+        "你希望对方那时怎样回应你？"
+      ],
+      "situationOptions": [
+        "在一群人中、大家都很热闹时",
+        "晚上一个人、想找人说话时",
+        "真正难受却不知道找谁时"
+      ]
     },
     {
       "id": "counterfactual_regret",
@@ -1982,7 +2102,17 @@
         "d_allow_grief",
         "d_reconnect_self"
       ],
-      "review_status": "pending_review"
+      "review_status": "pending_review",
+      "sceneQuestions": [
+        "你反复改写的是哪件事？当时你做了什么选择？",
+        "你设想中的「另一种结果」是什么？",
+        "这个「如果」现在影响了你的什么决定？"
+      ],
+      "situationOptions": [
+        "夜深人静、没有事情可做时",
+        "看到和那段经历有关的人和事时",
+        "要做一个类似的选择时"
+      ]
     },
     {
       "id": "emotional_exhaustion",
@@ -2125,7 +2255,17 @@
         "d_boundary",
         "d_grounding"
       ],
-      "review_status": "pending_review"
+      "review_status": "pending_review",
+      "sceneQuestions": [
+        "这段时间主要在应付什么？持续多久了？",
+        "休息之后有恢复吗？",
+        "现在最明显的感受是什么？累、麻木，还是提不起劲？"
+      ],
+      "situationOptions": [
+        "连续照顾别人一段时间之后",
+        "工作或学习特别密集的时期",
+        "长期处理同一件消耗人的事时"
+      ]
     }
   ],
   "directions": {

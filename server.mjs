@@ -328,7 +328,8 @@ const SYSTEM_IDENTIFY = [
   '1. 只能从【候选概念】里选择 id，绝对不能编造概念、也不能引入候选之外的术语。',
   '2. 不做临床诊断，不把一次反应说成固定人格或依恋类型。',
   '3. 不虚构文献、作者、研究或数据。',
-  '4. 只依据用户明确说过的内容判断；不确定就少给候选，不要凑满。',
+  '4. 只依据用户明确说过的内容判断。信息足够、且确实存在符合的概念库模式时，给出 3 到 4 个候选，按贴合程度从强到弱排列；',
+  '   如果内容不属于概念库的议题（例如日常琐事、躯体不适、第三方事件、已经解决的冲突），即使信息完整也必须返回空数组，不要为凑数给候选。',
   '5. 如果线索不足以选出任何候选，candidates 返回空数组，并在 note 里说明还缺什么。',
   '6. 不要重复【已经问过的问题】；不要问“你感觉怎么样”这类泛泛的问题。',
   '',
@@ -348,10 +349,16 @@ const SYSTEM_IDENTIFY = [
   '  「我跟他最近有点怪，说不上来」→ 只有 D，追问。',
   '',
   '注意：追问不是为了确认你已经判断出的概念；如果四项齐全，即使仍有两个候选，也不要问，用 note 说明不确定性即可。',
+  '四项齐全且确实符合概念库议题时，请给满 3 到 4 个候选，并在 reason 里说明它与前一个候选的区别；用户需要能横向比较。',
+  '反例（必须返回空数组）：',
+  '  「堵车堵了一个小时，烦死了，到家就好了」→ 日常烦躁，无反复模式。',
+  '  「我对海鲜过敏，吃了会起疹子」→ 躯体反应，不是情绪议题。',
+  '  「朋友失恋了，我陪她聊了一晚上」→ 第三人称，非用户自身痛苦。',
+  '  「他迟到半小时，道歉了我们就去吃饭了」→ 冲突已解决。',
   '',
   '只输出严格的 JSON，不要 markdown 代码块，不要任何额外文字。JSON 结构：',
   '{',
-  '  "candidates": [{"id": "候选概念 id", "reason": "依据用户原话的线索，20 到 40 字"}],',
+  '  "candidates": [{"id": "候选概念 id", "reason": "依据用户原话的线索，15 到 35 字"}],',
   '  "follow_up_questions": [{"question": "一句提问", "options": ["选项一", "选项二", "选项三"]}],',
   '  "confidence": "较高" | "中等" | "有限",',
   '  "note": "一句关于匹配不确定性的说明，没有就空字符串"',
@@ -530,6 +537,27 @@ function normalizeIdentify(data, pool, round) {  const allowed = new Set(pool.ma
   };
 }
 
+/**
+ * 模型偶尔只给 1–2 个候选，但产品需要 3–4 个方向供比较。
+ * 从检索池按顺序补齐，理由用概念的一句话说明，避免编造匹配依据。
+ */
+function padCandidates(candidates, pool, target) {
+  const list = candidates.slice();
+  const seen = new Set(list.map(function (c) { return c.conceptId; }));
+  pool.forEach(function (c) {
+    if (list.length >= target || seen.has(c.id)) return;
+    seen.add(c.id);
+    list.push({
+      conceptId: c.id,
+      name: c.name,
+      plain: c.plain,
+      scene: (c.indicators || [])[0] || '',
+      reason: '与你的描述有一部分相似：' + c.plain
+    });
+  });
+  return list;
+}
+
 async function handleIdentify(req, res) {
   let payload;
   try {
@@ -586,6 +614,11 @@ async function handleIdentify(req, res) {
       result.followUps = [];
     } else if (!result.followUps.length) {
       result.followUps = fallbackQuestions(gate.missing);
+    }
+
+    // 产品要求信息足够时展示 3–4 个候选；模型给少了就从检索池按顺序补齐
+    if (gate.score >= 3 && result.candidates.length > 0 && result.candidates.length < 3) {
+      result.candidates = padCandidates(result.candidates, pool, 3);
     }
 
     sendJSON(res, 200, {
@@ -673,6 +706,134 @@ async function handleReport(req, res) {
       error: reason,
       detail: err && err.message ? String(err.message) : '',
       upstream: err && err.body ? err.body : ''
+    });
+  }
+}
+
+/* ---------- 接口：把用户场景与所选概念对应起来（板块二第 4 页） ---------- */
+
+const SYSTEM_INTERPRET = [
+  '你是「给痛苦一个名字」的理解助手。用户已经选定一个概念，并描述了一段具体经历。',
+  '你的任务是把这段经历与概念对应起来，帮助用户确认或修正理解。这不是诊断。',
+  '',
+  '必须遵守：',
+  '1. 只能使用给定概念的定义与指标，不引入新的概念名或理论。',
+  '2. 只使用用户明确说过的内容；不推断对方的动机、童年、家庭或人格。',
+  '3. 明确区分三类内容：用户说过的事实、基于概念的可能解释、目前无法确定的。',
+  '4. 概念只部分贴合或信息不足时，要在 caveat 里直接说明，不要硬套。',
+  '5. 用日常语言，克制、具体，每句不超过 60 字。',
+  '',
+  '只输出严格 JSON，不要 markdown，不要额外文字：',
+  '{',
+  '  "facts": ["用户明确说过的事实，最多 4 条"],',
+  '  "matches": [{"fact": "对应的事实", "interpretation": "与概念的相似之处，可能/相似这类措辞", "certainty": "fact" | "hypothesis"}],',
+  '  "unknown": ["仅凭目前描述无法确定的，最多 3 条"],',
+  '  "caveat": "概念不完全贴合或信息不足时的说明，没有就空字符串"',
+  '}'
+].join('\n');
+
+function buildInterpretPrompt(concept, payload) {
+  const answers = Array.isArray(payload.answers)
+    ? payload.answers.map(function (a) {
+        if (typeof a === 'string') return clipText(a, 300);
+        return a && typeof a === 'object' && !a.skipped ? clipText(a.text, 300) : '';
+      }).filter(Boolean).slice(0, 10)
+    : [];
+  const scene = Array.isArray(payload.sceneAnswers)
+    ? payload.sceneAnswers.map(function (s) {
+        if (!s || typeof s !== 'object') return '';
+        const q = clipText(s.question, 120);
+        const a = s.skipped ? '（跳过）' : clipText(s.text, 400);
+        return a ? '问：' + q + '\n答：' + a : '';
+      }).filter(Boolean).slice(0, 6)
+    : [];
+
+  return [
+    '【概念】',
+    'id：' + concept.id,
+    '名称：' + concept.name + '（' + concept.plain + '）',
+    '定义：' + concept.definition,
+    '典型表现：' + (concept.indicators || []).join('；'),
+    '不适用：' + (concept.nonApplicable || []).join('；'),
+    '',
+    '【用户最初描述】',
+    clipText(payload.raw, 2000),
+    '',
+    '【板块一已收集的回答】',
+    answers.length ? answers.join('；') : '无',
+    '',
+    '【本次具体场景】',
+    scene.length ? scene.join('\n') : '无',
+    '',
+    '【用户的修正】',
+    clipText(payload.correction, 600) || '无',
+    '',
+    '请按 system 约定的 JSON 结构输出。'
+  ].join('\n');
+}
+
+function normalizeInterpret(data) {
+  const matches = Array.isArray(data.matches)
+    ? data.matches.slice(0, 5).map(function (m) {
+        if (!m || typeof m !== 'object') return null;
+        const fact = clipText(m.fact, 120);
+        const interpretation = clipText(m.interpretation, 200);
+        if (!fact || !interpretation) return null;
+        return {
+          fact: fact,
+          interpretation: interpretation,
+          certainty: m.certainty === 'fact' ? 'fact' : 'hypothesis'
+        };
+      }).filter(Boolean)
+    : [];
+  return {
+    facts: listOf(data.facts, 140, 4),
+    matches: matches,
+    unknown: listOf(data.unknown, 140, 3),
+    caveat: clipText(data.caveat, 300)
+  };
+}
+
+async function handleInterpret(req, res) {
+  let payload;
+  try {
+    payload = JSON.parse(await readBody(req));
+  } catch (err) {
+    sendJSON(res, 400, { ok: false, error: '请求体不是合法 JSON' });
+    return;
+  }
+
+  const lib = loadLibrary();
+  if (!lib) {
+    sendJSON(res, 503, { ok: false, error: '概念库未找到：' + LIBRARY_REL });
+    return;
+  }
+  const concept = findConcept(lib, clipText(payload.conceptId, 64));
+  if (!concept) {
+    sendJSON(res, 400, { ok: false, error: 'concept_not_found' });
+    return;
+  }
+  if (!API_KEY) {
+    sendJSON(res, 503, { ok: false, error: '未配置 LLM_API_KEY' });
+    return;
+  }
+
+  try {
+    const content = await callModel([
+      { role: 'system', content: SYSTEM_INTERPRET },
+      { role: 'user', content: buildInterpretPrompt(concept, payload) }
+    ], 900);
+    sendJSON(res, 200, {
+      ok: true,
+      concept: { id: concept.id, name: concept.name },
+      interpretation: normalizeInterpret(extractJSON(content)),
+      meta: { model: MODEL, source: LIBRARY_REL }
+    });
+  } catch (err) {
+    sendJSON(res, 502, {
+      ok: false,
+      error: err && err.name === 'TimeoutError' ? '模型响应超时' : '模型生成失败',
+      detail: err && err.message ? String(err.message) : ''
     });
   }
 }
@@ -820,6 +981,15 @@ const server = http.createServer(async (req, res) => {
       return;
     }
     await handleReport(req, res);
+    return;
+  }
+
+  if (pathname === '/api/interpret') {
+    if (req.method !== 'POST') {
+      sendJSON(res, 405, { ok: false, error: '只支持 POST' });
+      return;
+    }
+    await handleInterpret(req, res);
     return;
   }
 
