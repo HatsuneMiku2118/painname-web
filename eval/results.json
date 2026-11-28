@@ -1,20 +1,20 @@
 {
-  "generated_at": "2026-11-26 11:14:00",
+  "generated_at": "2026-11-28 15:56:17",
   "api": "http://127.0.0.1:8123",
   "matching": {
     "total": 122,
     "errors": 0,
     "positives": 64,
     "negatives": 58,
-    "top1": 61,
+    "top1": 63,
     "top3": 64,
-    "top1_rate": 95.3,
+    "top1_rate": 98.4,
     "top3_rate": 100.0,
-    "mrr": 0.974,
-    "refusal": 52,
-    "refusal_rate": 89.7,
-    "false_positive": 6,
-    "false_positive_rate": 10.3,
+    "mrr": 0.992,
+    "refusal": 55,
+    "refusal_rate": 94.8,
+    "false_positive": 3,
+    "false_positive_rate": 5.2,
     "hard_negative": {
       "n": 30,
       "refusal": 28,
@@ -22,19 +22,19 @@
     },
     "corpus_negative": {
       "n": 20,
-      "refusal": 17,
-      "refusal_rate": 85.0
+      "refusal": 19,
+      "refusal_rate": 95.0
     },
     "simple_negative": {
       "n": 8,
-      "refusal": 7,
-      "refusal_rate": 87.5
+      "refusal": 8,
+      "refusal_rate": 100.0
     },
-    "avg_candidates": 1.8,
+    "avg_candidates": 1.75,
     "max_candidates": 4,
     "over4": 0,
-    "latency_p50": 6.74,
-    "latency_p90": 10.4
+    "latency_p50": 1.6,
+    "latency_p90": 2.13
   },
   "details": [
     {
@@ -46,7 +46,7 @@
         "relational_uncertainty",
         "attachment_anxiety"
       ],
-      "seconds": 6.38,
+      "seconds": 1.52,
       "error": null
     },
     {
@@ -58,7 +58,7 @@
         "emotional_granularity",
         "self_blame"
       ],
-      "seconds": 8.3,
+      "seconds": 1.9,
       "error": null
     },
     {
@@ -68,9 +68,10 @@
       "candidates": [
         "attachment_anxiety",
         "rejection_sensitivity",
-        "self_blame"
+        "rumination",
+        "worry"
       ],
-      "seconds": 9.04,
+      "seconds": 2.31,
       "error": null
     },
     {
@@ -82,7 +83,7 @@
         "rejection_sensitivity",
         "emotional_granularity"
       ],
-      "seconds": 8.04,
+      "seconds": 2.15,
       "error": null
     },
     {
@@ -92,9 +93,10 @@
       "candidates": [
         "rejection_sensitivity",
         "attachment_anxiety",
+        "self_blame",
         "relational_uncertainty"
       ],
-      "seconds": 6.06,
+      "seconds": 2.63,
       "error": null
     },
     {
@@ -103,10 +105,11 @@
       "expect": "match",
       "candidates": [
         "rejection_sensitivity",
-        "demand_withdraw",
-        "self_blame"
+        "attachment_anxiety",
+        "self_blame",
+        "emotional_granularity"
       ],
-      "seconds": 5.82,
+      "seconds": 2.21,
       "error": null
     },
     {
@@ -115,11 +118,11 @@
       "expect": "match",
       "candidates": [
         "relational_uncertainty",
-        "rejection_sensitivity",
+        "attachment_anxiety",
         "rumination",
-        "attachment_anxiety"
+        "rejection_sensitivity"
       ],
-      "seconds": 10.37,
+      "seconds": 1.99,
       "error": null
     },
     {
@@ -128,11 +131,11 @@
       "expect": "match",
       "candidates": [
         "relational_uncertainty",
+        "rumination",
         "attachment_anxiety",
-        "rejection_sensitivity",
-        "self_blame"
+        "rejection_sensitivity"
       ],
-      "seconds": 8.75,
+      "seconds": 1.89,
       "error": null
     },
     {
@@ -142,9 +145,10 @@
       "candidates": [
         "self_blame",
         "demand_withdraw",
+        "attachment_anxiety",
         "rumination"
       ],
-      "seconds": 8.44,
+      "seconds": 1.6,
       "error": null
     },
     {
@@ -156,7 +160,7 @@
         "rumination",
         "attachment_anxiety"
       ],
-      "seconds": 7.04,
+      "seconds": 1.71,
       "error": null
     },
     {
@@ -166,9 +170,9 @@
       "candidates": [
         "breakup_identity",
         "rumination",
-        "relational_uncertainty"
+        "emotional_granularity"
       ],
-      "seconds": 7.35,
+      "seconds": 1.38,
       "error": null
     },
     {
@@ -178,9 +182,9 @@
       "candidates": [
         "breakup_identity",
         "rumination",
-        "relational_uncertainty"
+        "emotional_granularity"
       ],
-      "seconds": 6.39,
+      "seconds": 1.75,
       "error": null
     },
     {
@@ -190,7 +194,7 @@
       "candidates": [
         "emotional_granularity"
       ],
-      "seconds": 3.75,
+      "seconds": 1.2,
       "error": null
     },
     {
@@ -198,11 +202,9 @@
       "gold": "emotional_granularity",
       "expect": "match",
       "candidates": [
-        "emotional_granularity",
-        "rumination",
-        "rejection_sensitivity"
+        "emotional_granularity"
       ],
-      "seconds": 7.24,
+      "seconds": 1.38,
       "error": null
     },
     {
@@ -211,11 +213,11 @@
       "expect": "match",
       "candidates": [
         "demand_withdraw",
-        "rumination",
         "attachment_anxiety",
-        "relational_uncertainty"
+        "rumination",
+        "self_blame"
       ],
-      "seconds": 9.04,
+      "seconds": 2.66,
       "error": null
     },
     {
@@ -224,10 +226,11 @@
       "expect": "match",
       "candidates": [
         "demand_withdraw",
+        "attachment_anxiety",
         "rejection_sensitivity",
-        "attachment_anxiety"
+        "relational_uncertainty"
       ],
-      "seconds": 10.69,
+      "seconds": 2.35,
       "error": null
     },
     {
@@ -237,9 +240,9 @@
       "candidates": [
         "self_silencing",
         "self_blame",
-        "demand_withdraw"
+        "rejection_sensitivity"
       ],
-      "seconds": 12.68,
+      "seconds": 1.54,
       "error": null
     },
     {
@@ -248,10 +251,10 @@
       "expect": "match",
       "candidates": [
         "self_silencing",
-        "breakup_identity",
+        "emotional_granularity",
         "self_blame"
       ],
-      "seconds": 14.07,
+      "seconds": 1.86,
       "error": null
     },
     {
@@ -260,10 +263,10 @@
       "expect": "match",
       "candidates": [
         "rumination",
-        "rejection_sensitivity",
-        "self_blame"
+        "self_blame",
+        "relational_uncertainty"
       ],
-      "seconds": 9.33,
+      "seconds": 1.87,
       "error": null
     },
     {
@@ -272,10 +275,11 @@
       "expect": "match",
       "candidates": [
         "rumination",
+        "relational_uncertainty",
         "rejection_sensitivity",
-        "self_blame"
+        "attachment_anxiety"
       ],
-      "seconds": 7.53,
+      "seconds": 1.64,
       "error": null
     },
     {
@@ -285,9 +289,10 @@
       "candidates": [
         "attachment_anxiety",
         "rejection_sensitivity",
+        "rumination",
         "relational_uncertainty"
       ],
-      "seconds": 9.91,
+      "seconds": 2.06,
       "error": null
     },
     {
@@ -295,12 +300,12 @@
       "gold": "attachment_anxiety",
       "expect": "match",
       "candidates": [
+        "attachment_anxiety",
         "worry",
         "rejection_sensitivity",
-        "attachment_anxiety",
-        "relational_uncertainty"
+        "rumination"
       ],
-      "seconds": 9.13,
+      "seconds": 2.1,
       "error": null
     },
     {
@@ -312,7 +317,7 @@
         "attachment_anxiety",
         "rumination"
       ],
-      "seconds": 10.82,
+      "seconds": 2.03,
       "error": null
     },
     {
@@ -322,9 +327,10 @@
       "candidates": [
         "relational_uncertainty",
         "attachment_anxiety",
-        "rumination"
+        "rumination",
+        "rejection_sensitivity"
       ],
-      "seconds": 13.45,
+      "seconds": 2.13,
       "error": null
     },
     {
@@ -334,9 +340,10 @@
       "candidates": [
         "self_blame",
         "attachment_anxiety",
-        "relational_uncertainty"
+        "rejection_sensitivity",
+        "emotional_granularity"
       ],
-      "seconds": 10.4,
+      "seconds": 1.99,
       "error": null
     },
     {
@@ -346,9 +353,9 @@
       "candidates": [
         "breakup_identity",
         "rumination",
-        "relational_uncertainty"
+        "emotional_granularity"
       ],
-      "seconds": 8.66,
+      "seconds": 1.91,
       "error": null
     },
     {
@@ -357,10 +364,10 @@
       "expect": "match",
       "candidates": [
         "emotional_granularity",
-        "rumination",
-        "relational_uncertainty"
+        "self_blame",
+        "attachment_anxiety"
       ],
-      "seconds": 8.72,
+      "seconds": 1.62,
       "error": null
     },
     {
@@ -369,10 +376,11 @@
       "expect": "match",
       "candidates": [
         "demand_withdraw",
+        "attachment_anxiety",
         "rejection_sensitivity",
-        "attachment_anxiety"
+        "rumination"
       ],
-      "seconds": 9.7,
+      "seconds": 2.75,
       "error": null
     },
     {
@@ -381,10 +389,11 @@
       "expect": "match",
       "candidates": [
         "self_silencing",
-        "rejection_sensitivity",
-        "self_blame"
+        "emotional_granularity",
+        "self_blame",
+        "attachment_anxiety"
       ],
-      "seconds": 10.07,
+      "seconds": 2.03,
       "error": null
     },
     {
@@ -396,19 +405,15 @@
         "demand_withdraw",
         "loneliness"
       ],
-      "seconds": 9.39,
+      "seconds": 2.11,
       "error": null
     },
     {
       "id": "n01",
       "gold": "__none__",
       "expect": "none",
-      "candidates": [
-        "emotional_granularity",
-        "attachment_anxiety",
-        "self_blame"
-      ],
-      "seconds": 6.91,
+      "candidates": [],
+      "seconds": 0.91,
       "error": null
     },
     {
@@ -416,7 +421,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 2.74,
+      "seconds": 1.42,
       "error": null
     },
     {
@@ -424,7 +429,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 4.06,
+      "seconds": 1.11,
       "error": null
     },
     {
@@ -432,7 +437,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 4.19,
+      "seconds": 1.16,
       "error": null
     },
     {
@@ -440,7 +445,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 0.8,
+      "seconds": 0.88,
       "error": null
     },
     {
@@ -448,7 +453,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 2.26,
+      "seconds": 0.96,
       "error": null
     },
     {
@@ -456,7 +461,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 6.74,
+      "seconds": 0.85,
       "error": null
     },
     {
@@ -464,7 +469,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 6.71,
+      "seconds": 0.92,
       "error": null
     },
     {
@@ -472,7 +477,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 1.5,
+      "seconds": 0.88,
       "error": null
     },
     {
@@ -480,7 +485,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 5.19,
+      "seconds": 1.06,
       "error": null
     },
     {
@@ -488,7 +493,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 1.0,
+      "seconds": 1.07,
       "error": null
     },
     {
@@ -496,7 +501,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 3.43,
+      "seconds": 0.73,
       "error": null
     },
     {
@@ -504,7 +509,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 1.05,
+      "seconds": 1.34,
       "error": null
     },
     {
@@ -512,7 +517,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 3.14,
+      "seconds": 1.09,
       "error": null
     },
     {
@@ -520,15 +525,18 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 2.47,
+      "seconds": 1.06,
       "error": null
     },
     {
       "id": "h08",
       "gold": "__none__",
       "expect": "none",
-      "candidates": [],
-      "seconds": 3.16,
+      "candidates": [
+        "rejection_sensitivity",
+        "emotional_granularity"
+      ],
+      "seconds": 1.27,
       "error": null
     },
     {
@@ -536,7 +544,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 1.01,
+      "seconds": 1.38,
       "error": null
     },
     {
@@ -544,7 +552,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 1.3,
+      "seconds": 0.87,
       "error": null
     },
     {
@@ -552,19 +560,15 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 3.37,
+      "seconds": 1.09,
       "error": null
     },
     {
       "id": "c02",
       "gold": "__none__",
       "expect": "none",
-      "candidates": [
-        "rumination",
-        "self_blame",
-        "breakup_identity"
-      ],
-      "seconds": 10.36,
+      "candidates": [],
+      "seconds": 0.81,
       "error": null
     },
     {
@@ -572,7 +576,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 2.99,
+      "seconds": 0.78,
       "error": null
     },
     {
@@ -580,7 +584,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 3.64,
+      "seconds": 0.74,
       "error": null
     },
     {
@@ -588,7 +592,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 2.17,
+      "seconds": 2.35,
       "error": null
     },
     {
@@ -596,7 +600,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 0.98,
+      "seconds": 0.71,
       "error": null
     },
     {
@@ -604,7 +608,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 0.96,
+      "seconds": 0.79,
       "error": null
     },
     {
@@ -612,7 +616,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 0.96,
+      "seconds": 0.73,
       "error": null
     },
     {
@@ -621,11 +625,10 @@
       "expect": "match",
       "candidates": [
         "rumination",
-        "emotional_granularity",
-        "self_blame",
-        "demand_withdraw"
+        "rejection_sensitivity",
+        "self_blame"
       ],
-      "seconds": 10.86,
+      "seconds": 2.17,
       "error": null
     },
     {
@@ -634,10 +637,10 @@
       "expect": "match",
       "candidates": [
         "rumination",
-        "self_blame",
+        "relational_uncertainty",
         "attachment_anxiety"
       ],
-      "seconds": 9.98,
+      "seconds": 1.65,
       "error": null
     },
     {
@@ -645,11 +648,12 @@
       "gold": "rejection_sensitivity",
       "expect": "match",
       "candidates": [
-        "rumination",
+        "attachment_anxiety",
         "rejection_sensitivity",
-        "attachment_anxiety"
+        "rumination",
+        "relational_uncertainty"
       ],
-      "seconds": 7.52,
+      "seconds": 1.95,
       "error": null
     },
     {
@@ -661,7 +665,7 @@
         "worry",
         "demand_withdraw"
       ],
-      "seconds": 8.07,
+      "seconds": 1.85,
       "error": null
     },
     {
@@ -671,9 +675,9 @@
       "candidates": [
         "rejection_sensitivity",
         "self_blame",
-        "demand_withdraw"
+        "attachment_anxiety"
       ],
-      "seconds": 9.4,
+      "seconds": 1.74,
       "error": null
     },
     {
@@ -681,11 +685,12 @@
       "gold": "rejection_sensitivity",
       "expect": "match",
       "candidates": [
-        "self_blame",
         "rejection_sensitivity",
+        "rumination",
+        "self_blame",
         "attachment_anxiety"
       ],
-      "seconds": 9.4,
+      "seconds": 1.77,
       "error": null
     },
     {
@@ -694,10 +699,10 @@
       "expect": "match",
       "candidates": [
         "relational_uncertainty",
-        "attachment_anxiety",
-        "rejection_sensitivity"
+        "rumination",
+        "attachment_anxiety"
       ],
-      "seconds": 6.36,
+      "seconds": 1.82,
       "error": null
     },
     {
@@ -706,10 +711,11 @@
       "expect": "match",
       "candidates": [
         "relational_uncertainty",
+        "attachment_anxiety",
         "rejection_sensitivity",
-        "self_blame"
+        "rumination"
       ],
-      "seconds": 8.3,
+      "seconds": 2.12,
       "error": null
     },
     {
@@ -718,11 +724,10 @@
       "expect": "match",
       "candidates": [
         "self_blame",
-        "rumination",
         "attachment_anxiety",
-        "emotional_granularity"
+        "rumination"
       ],
-      "seconds": 9.13,
+      "seconds": 1.67,
       "error": null
     },
     {
@@ -731,10 +736,11 @@
       "expect": "match",
       "candidates": [
         "self_blame",
+        "rumination",
         "rejection_sensitivity",
         "attachment_anxiety"
       ],
-      "seconds": 6.19,
+      "seconds": 1.67,
       "error": null
     },
     {
@@ -744,9 +750,9 @@
       "candidates": [
         "breakup_identity",
         "rumination",
-        "relational_uncertainty"
+        "emotional_granularity"
       ],
-      "seconds": 9.35,
+      "seconds": 1.61,
       "error": null
     },
     {
@@ -756,9 +762,10 @@
       "candidates": [
         "breakup_identity",
         "rumination",
-        "self_blame"
+        "self_blame",
+        "relational_uncertainty"
       ],
-      "seconds": 6.88,
+      "seconds": 1.59,
       "error": null
     },
     {
@@ -768,9 +775,9 @@
       "candidates": [
         "emotional_granularity",
         "self_silencing",
-        "rumination"
+        "self_blame"
       ],
-      "seconds": 9.12,
+      "seconds": 1.68,
       "error": null
     },
     {
@@ -782,7 +789,7 @@
         "rumination",
         "self_blame"
       ],
-      "seconds": 7.53,
+      "seconds": 1.69,
       "error": null
     },
     {
@@ -792,9 +799,10 @@
       "candidates": [
         "demand_withdraw",
         "attachment_anxiety",
-        "rejection_sensitivity"
+        "rumination",
+        "relational_uncertainty"
       ],
-      "seconds": 4.95,
+      "seconds": 2.0,
       "error": null
     },
     {
@@ -804,9 +812,9 @@
       "candidates": [
         "demand_withdraw",
         "rumination",
-        "relational_uncertainty"
+        "attachment_anxiety"
       ],
-      "seconds": 5.22,
+      "seconds": 2.26,
       "error": null
     },
     {
@@ -815,10 +823,11 @@
       "expect": "match",
       "candidates": [
         "self_silencing",
-        "rejection_sensitivity",
-        "attachment_anxiety"
+        "self_blame",
+        "attachment_anxiety",
+        "rejection_sensitivity"
       ],
-      "seconds": 7.98,
+      "seconds": 1.89,
       "error": null
     },
     {
@@ -828,9 +837,9 @@
       "candidates": [
         "self_silencing",
         "emotional_granularity",
-        "rejection_sensitivity"
+        "self_blame"
       ],
-      "seconds": 11.74,
+      "seconds": 1.6,
       "error": null
     },
     {
@@ -839,11 +848,9 @@
       "expect": "match",
       "candidates": [
         "worry",
-        "rumination",
-        "attachment_anxiety",
-        "relational_uncertainty"
+        "rumination"
       ],
-      "seconds": 12.76,
+      "seconds": 1.67,
       "error": null
     },
     {
@@ -855,7 +862,7 @@
         "rumination",
         "self_blame"
       ],
-      "seconds": 8.83,
+      "seconds": 2.95,
       "error": null
     },
     {
@@ -865,9 +872,10 @@
       "candidates": [
         "shame",
         "rumination",
+        "rejection_sensitivity",
         "self_blame"
       ],
-      "seconds": 6.64,
+      "seconds": 1.74,
       "error": null
     },
     {
@@ -877,9 +885,9 @@
       "candidates": [
         "shame",
         "rejection_sensitivity",
-        "loneliness"
+        "emotional_granularity"
       ],
-      "seconds": 7.1,
+      "seconds": 1.88,
       "error": null
     },
     {
@@ -888,10 +896,10 @@
       "expect": "match",
       "candidates": [
         "loneliness",
-        "rejection_sensitivity",
-        "relational_uncertainty"
+        "emotional_granularity",
+        "self_blame"
       ],
-      "seconds": 7.47,
+      "seconds": 1.66,
       "error": null
     },
     {
@@ -901,10 +909,9 @@
       "candidates": [
         "loneliness",
         "rumination",
-        "rejection_sensitivity",
-        "relational_uncertainty"
+        "emotional_granularity"
       ],
-      "seconds": 11.71,
+      "seconds": 1.65,
       "error": null
     },
     {
@@ -917,7 +924,7 @@
         "breakup_identity",
         "self_blame"
       ],
-      "seconds": 9.24,
+      "seconds": 1.93,
       "error": null
     },
     {
@@ -926,11 +933,9 @@
       "expect": "match",
       "candidates": [
         "counterfactual_regret",
-        "rumination",
-        "self_blame",
-        "emotional_granularity"
+        "rumination"
       ],
-      "seconds": 12.04,
+      "seconds": 1.66,
       "error": null
     },
     {
@@ -939,10 +944,10 @@
       "expect": "match",
       "candidates": [
         "emotional_exhaustion",
-        "self_blame",
-        "breakup_identity"
+        "emotional_granularity",
+        "self_blame"
       ],
-      "seconds": 10.95,
+      "seconds": 1.84,
       "error": null
     },
     {
@@ -951,10 +956,10 @@
       "expect": "match",
       "candidates": [
         "emotional_exhaustion",
-        "self_blame",
-        "rumination"
+        "demand_withdraw",
+        "self_blame"
       ],
-      "seconds": 9.96,
+      "seconds": 1.56,
       "error": null
     },
     {
@@ -963,10 +968,10 @@
       "expect": "match",
       "candidates": [
         "self_silencing",
-        "demand_withdraw",
-        "loneliness"
+        "loneliness",
+        "self_blame"
       ],
-      "seconds": 7.62,
+      "seconds": 1.66,
       "error": null
     },
     {
@@ -978,7 +983,7 @@
         "self_blame",
         "rejection_sensitivity"
       ],
-      "seconds": 9.97,
+      "seconds": 1.84,
       "error": null
     },
     {
@@ -987,10 +992,9 @@
       "expect": "match",
       "candidates": [
         "loneliness",
-        "rejection_sensitivity",
         "emotional_granularity"
       ],
-      "seconds": 7.81,
+      "seconds": 1.46,
       "error": null
     },
     {
@@ -1000,10 +1004,9 @@
       "candidates": [
         "counterfactual_regret",
         "rumination",
-        "self_blame",
-        "relational_uncertainty"
+        "self_blame"
       ],
-      "seconds": 13.89,
+      "seconds": 1.83,
       "error": null
     },
     {
@@ -1011,11 +1014,9 @@
       "gold": "emotional_exhaustion",
       "expect": "match",
       "candidates": [
-        "emotional_exhaustion",
-        "rumination",
-        "self_blame"
+        "emotional_exhaustion"
       ],
-      "seconds": 10.4,
+      "seconds": 1.27,
       "error": null
     },
     {
@@ -1023,11 +1024,9 @@
       "gold": "emotional_granularity",
       "expect": "match",
       "candidates": [
-        "emotional_granularity",
-        "rumination",
-        "self_blame"
+        "emotional_granularity"
       ],
-      "seconds": 7.66,
+      "seconds": 1.27,
       "error": null
     },
     {
@@ -1035,7 +1034,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 2.89,
+      "seconds": 1.0,
       "error": null
     },
     {
@@ -1043,7 +1042,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 0.88,
+      "seconds": 0.7,
       "error": null
     },
     {
@@ -1051,7 +1050,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 3.36,
+      "seconds": 0.99,
       "error": null
     },
     {
@@ -1059,7 +1058,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 1.01,
+      "seconds": 1.05,
       "error": null
     },
     {
@@ -1067,7 +1066,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 1.07,
+      "seconds": 1.04,
       "error": null
     },
     {
@@ -1075,7 +1074,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 3.46,
+      "seconds": 0.88,
       "error": null
     },
     {
@@ -1083,7 +1082,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 1.0,
+      "seconds": 0.74,
       "error": null
     },
     {
@@ -1091,7 +1090,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 3.21,
+      "seconds": 0.94,
       "error": null
     },
     {
@@ -1099,7 +1098,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 0.92,
+      "seconds": 0.68,
       "error": null
     },
     {
@@ -1107,7 +1106,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 1.05,
+      "seconds": 2.32,
       "error": null
     },
     {
@@ -1115,19 +1114,15 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 1.49,
+      "seconds": 0.88,
       "error": null
     },
     {
       "id": "k12",
       "gold": "__none__",
       "expect": "none",
-      "candidates": [
-        "breakup_identity",
-        "rumination",
-        "emotional_granularity"
-      ],
-      "seconds": 8.86,
+      "candidates": [],
+      "seconds": 1.32,
       "error": null
     },
     {
@@ -1135,7 +1130,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 3.82,
+      "seconds": 1.03,
       "error": null
     },
     {
@@ -1143,7 +1138,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 3.55,
+      "seconds": 1.68,
       "error": null
     },
     {
@@ -1151,7 +1146,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 5.48,
+      "seconds": 1.77,
       "error": null
     },
     {
@@ -1159,7 +1154,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 2.05,
+      "seconds": 2.68,
       "error": null
     },
     {
@@ -1169,9 +1164,9 @@
       "candidates": [
         "self_silencing",
         "rejection_sensitivity",
-        "relational_uncertainty"
+        "emotional_granularity"
       ],
-      "seconds": 7.42,
+      "seconds": 1.52,
       "error": null
     },
     {
@@ -1179,7 +1174,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 0.73,
+      "seconds": 0.91,
       "error": null
     },
     {
@@ -1187,7 +1182,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 0.83,
+      "seconds": 0.97,
       "error": null
     },
     {
@@ -1195,7 +1190,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 3.91,
+      "seconds": 0.96,
       "error": null
     },
     {
@@ -1203,7 +1198,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 0.77,
+      "seconds": 0.87,
       "error": null
     },
     {
@@ -1211,7 +1206,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 2.91,
+      "seconds": 1.6,
       "error": null
     },
     {
@@ -1219,7 +1214,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 3.08,
+      "seconds": 0.76,
       "error": null
     },
     {
@@ -1227,31 +1222,23 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 1.87,
+      "seconds": 1.46,
       "error": null
     },
     {
       "id": "x05",
       "gold": "__none__",
       "expect": "none",
-      "candidates": [
-        "rumination",
-        "self_blame",
-        "emotional_granularity"
-      ],
-      "seconds": 8.08,
+      "candidates": [],
+      "seconds": 0.75,
       "error": null
     },
     {
       "id": "x06",
       "gold": "__none__",
       "expect": "none",
-      "candidates": [
-        "rejection_sensitivity",
-        "attachment_anxiety",
-        "self_blame"
-      ],
-      "seconds": 9.26,
+      "candidates": [],
+      "seconds": 1.02,
       "error": null
     },
     {
@@ -1259,7 +1246,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 0.97,
+      "seconds": 0.77,
       "error": null
     },
     {
@@ -1267,7 +1254,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 2.44,
+      "seconds": 0.77,
       "error": null
     },
     {
@@ -1275,7 +1262,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 0.86,
+      "seconds": 0.65,
       "error": null
     },
     {
@@ -1283,7 +1270,7 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 0.82,
+      "seconds": 1.63,
       "error": null
     },
     {
@@ -1291,15 +1278,19 @@
       "gold": "__none__",
       "expect": "none",
       "candidates": [],
-      "seconds": 0.99,
+      "seconds": 0.86,
       "error": null
     },
     {
       "id": "x12",
       "gold": "__none__",
       "expect": "none",
-      "candidates": [],
-      "seconds": 4.36,
+      "candidates": [
+        "self_blame",
+        "rejection_sensitivity",
+        "attachment_anxiety"
+      ],
+      "seconds": 1.77,
       "error": null
     }
   ],
@@ -1311,11 +1302,11 @@
       "explanation": 2,
       "mechanism": 2,
       "cycle": 4,
-      "links": 1,
-      "summary_chars": 47,
+      "links": 4,
+      "summary_chars": 129,
       "banned_hits": [],
       "citation_hits": [],
-      "seconds": 23.2
+      "seconds": 5.0
     },
     {
       "conceptId": "attachment_anxiety",
@@ -1323,12 +1314,12 @@
       "error": null,
       "explanation": 2,
       "mechanism": 2,
-      "cycle": 4,
-      "links": 1,
-      "summary_chars": 50,
+      "cycle": 5,
+      "links": 3,
+      "summary_chars": 117,
       "banned_hits": [],
       "citation_hits": [],
-      "seconds": 24.28
+      "seconds": 5.11
     },
     {
       "conceptId": "self_blame",
@@ -1337,24 +1328,24 @@
       "explanation": 2,
       "mechanism": 2,
       "cycle": 5,
-      "links": 1,
-      "summary_chars": 59,
+      "links": 4,
+      "summary_chars": 156,
       "banned_hits": [],
       "citation_hits": [],
-      "seconds": 20.65
+      "seconds": 5.79
     },
     {
       "conceptId": "breakup_identity",
       "ok": true,
       "error": null,
       "explanation": 2,
-      "mechanism": 1,
-      "cycle": 4,
-      "links": 1,
-      "summary_chars": 89,
+      "mechanism": 2,
+      "cycle": 5,
+      "links": 3,
+      "summary_chars": 115,
       "banned_hits": [],
       "citation_hits": [],
-      "seconds": 22.25
+      "seconds": 4.07
     },
     {
       "conceptId": "emotional_granularity",
@@ -1362,25 +1353,25 @@
       "error": null,
       "explanation": 2,
       "mechanism": 2,
-      "cycle": 5,
-      "links": 1,
-      "summary_chars": 47,
+      "cycle": 4,
+      "links": 3,
+      "summary_chars": 95,
       "banned_hits": [],
       "citation_hits": [],
-      "seconds": 19.34
+      "seconds": 4.56
     },
     {
       "conceptId": "demand_withdraw",
       "ok": true,
       "error": null,
       "explanation": 2,
-      "mechanism": 1,
+      "mechanism": 2,
       "cycle": 5,
-      "links": 1,
-      "summary_chars": 38,
+      "links": 4,
+      "summary_chars": 136,
       "banned_hits": [],
       "citation_hits": [],
-      "seconds": 18.83
+      "seconds": 5.14
     }
   ],
   "followups": {
@@ -1399,8 +1390,8 @@
         "id": "f01",
         "should_ask": true,
         "asked": true,
-        "count": 2,
-        "seconds": 11.38,
+        "count": 1,
+        "seconds": 1.19,
         "error": null
       },
       {
@@ -1408,7 +1399,7 @@
         "should_ask": true,
         "asked": true,
         "count": 2,
-        "seconds": 13.05,
+        "seconds": 1.55,
         "error": null
       },
       {
@@ -1416,15 +1407,15 @@
         "should_ask": true,
         "asked": true,
         "count": 2,
-        "seconds": 11.4,
+        "seconds": 1.8,
         "error": null
       },
       {
         "id": "f04",
         "should_ask": true,
         "asked": true,
-        "count": 2,
-        "seconds": 3.16,
+        "count": 1,
+        "seconds": 1.32,
         "error": null
       },
       {
@@ -1432,7 +1423,7 @@
         "should_ask": true,
         "asked": true,
         "count": 2,
-        "seconds": 12.37,
+        "seconds": 1.43,
         "error": null
       },
       {
@@ -1440,7 +1431,7 @@
         "should_ask": true,
         "asked": true,
         "count": 2,
-        "seconds": 14.94,
+        "seconds": 1.74,
         "error": null
       },
       {
@@ -1448,7 +1439,7 @@
         "should_ask": false,
         "asked": false,
         "count": 0,
-        "seconds": 11.82,
+        "seconds": 1.79,
         "error": null
       },
       {
@@ -1456,7 +1447,7 @@
         "should_ask": false,
         "asked": false,
         "count": 0,
-        "seconds": 9.73,
+        "seconds": 1.53,
         "error": null
       },
       {
@@ -1464,7 +1455,7 @@
         "should_ask": false,
         "asked": false,
         "count": 0,
-        "seconds": 7.51,
+        "seconds": 3.67,
         "error": null
       },
       {
@@ -1472,7 +1463,7 @@
         "should_ask": false,
         "asked": false,
         "count": 0,
-        "seconds": 10.83,
+        "seconds": 2.34,
         "error": null
       },
       {
@@ -1480,7 +1471,7 @@
         "should_ask": false,
         "asked": false,
         "count": 0,
-        "seconds": 16.2,
+        "seconds": 1.95,
         "error": null
       },
       {
@@ -1488,7 +1479,7 @@
         "should_ask": false,
         "asked": false,
         "count": 0,
-        "seconds": 9.39,
+        "seconds": 1.84,
         "error": null
       }
     ]

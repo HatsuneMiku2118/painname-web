@@ -256,20 +256,37 @@ function fillFromConcept(report, concept) {
   };
 }
 
-async function callModel(messages, maxTokens) {
+async function callModel(messages, maxTokens, jsonMode) {
+  const body = {
+    model: MODEL,
+    messages: messages,
+    stream: false,
+    temperature: 0.3,
+    max_tokens: maxTokens || 2200
+  };
+  // 智谱 GLM-4.5 及以上是混合思考模型：默认先输出 reasoning_content，
+  // 会吃掉 max_tokens 导致 content 为空。这里默认关闭思考，可用 LLM_THINKING=on 打开。
+  if (/bigmodel\.cn/.test(BASE_URL) && /^glm-(4\.[5-9]|5|6|7)/i.test(MODEL) && process.env.LLM_THINKING !== 'on') {
+    body.thinking = { type: 'disabled' };
+  }
+  // 阿里云百炼（含私有业务空间）用 enable_thinking 关闭思考，
+  // 否则 reasoning_content 会先占满 max_tokens，content 为空。
+  if (/aliyuncs\.com/.test(BASE_URL) && process.env.LLM_THINKING !== 'on') {
+    body.enable_thinking = false;
+  }
+  // 需要严格 JSON 的接口：智谱支持 json_object 模式，可显著减少格式错误。
+  // 其他服务商不一定支持该字段，因此只在确认兼容时启用；LLM_JSON_MODE=off 可关闭。
+  if (jsonMode && /bigmodel\.cn/.test(BASE_URL) && process.env.LLM_JSON_MODE !== 'off') {
+    body.response_format = { type: 'json_object' };
+  }
+
   const upstream = await fetch(BASE_URL + '/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: 'Bearer ' + API_KEY
     },
-    body: JSON.stringify({
-      model: MODEL,
-      messages: messages,
-      stream: false,
-      temperature: 0.3,
-      max_tokens: maxTokens || 2200
-    }),
+    body: JSON.stringify(body),
     signal: AbortSignal.timeout(45000)
   });
 
@@ -289,6 +306,26 @@ async function callModel(messages, maxTokens) {
     data.choices[0].message.content;
   if (!content) throw new Error('empty_content');
   return content;
+}
+
+/**
+ * 需要严格 JSON 的场景：解析失败时补一句修复提示重试一次。
+ * 只在失败时多一次请求，正常情况不增加延迟。
+ */
+async function callModelJSON(system, user, maxTokens) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const suffix = attempt === 0 ? '' :
+      '\n\n注意：上一次输出不是合法 JSON。请只输出一个合法的 JSON 对象，字符串内部不要出现未转义的英文双引号，不要输出 markdown 代码块或解释文字。';
+    const content = await callModel([
+      { role: 'system', content: system },
+      { role: 'user', content: user + suffix }
+    ], maxTokens, true);
+    try {
+      return extractJSON(content);
+    } catch (err) {
+      if (attempt === 1) throw err;
+    }
+  }
 }
 
 /* ---------- 接口：概念库统计 ---------- */
@@ -601,12 +638,9 @@ async function handleIdentify(req, res) {
   const round = Math.max(0, Math.min(1, Number(payload.followUpRounds) || 0));
 
   try {
-    const content = await callModel([
-      { role: 'system', content: SYSTEM_IDENTIFY },
-      { role: 'user', content: buildIdentifyPrompt(pool, payload, round) }
-    ], 900);
+    const parsed = await callModelJSON(SYSTEM_IDENTIFY, buildIdentifyPrompt(pool, payload, round), 900);
 
-    const result = normalizeIdentify(extractJSON(content), pool, round);
+    const result = normalizeIdentify(parsed, pool, round);
 
     // 四项信息清点：足够则不再追问；不足且模型没问，则补一个针对性问题
     const gate = assessInformation(raw, combined);
@@ -684,10 +718,7 @@ async function handleReport(req, res) {
   }
 
   try {
-    const content = await callModel([
-      { role: 'system', content: SYSTEM_REPORT },
-      { role: 'user', content: buildReportPrompt(concept, payload) }
-    ], 2200);
+    const parsed = await callModelJSON(SYSTEM_REPORT, buildReportPrompt(concept, payload), 2200);
 
     sendJSON(res, 200, {
       ok: true,
@@ -696,7 +727,7 @@ async function handleReport(req, res) {
         name: concept.name,
         review_status: concept.review_status || 'pending_review'
       },
-      report: fillFromConcept(normalizeReport(extractJSON(content)), concept),
+      report: fillFromConcept(normalizeReport(parsed), concept),
       meta: { model: MODEL, source: LIBRARY_REL, libraryUpdatedAt: new Date(lib._mtime).toISOString() }
     });
   } catch (err) {
@@ -819,14 +850,11 @@ async function handleInterpret(req, res) {
   }
 
   try {
-    const content = await callModel([
-      { role: 'system', content: SYSTEM_INTERPRET },
-      { role: 'user', content: buildInterpretPrompt(concept, payload) }
-    ], 900);
+    const parsed = await callModelJSON(SYSTEM_INTERPRET, buildInterpretPrompt(concept, payload), 900);
     sendJSON(res, 200, {
       ok: true,
       concept: { id: concept.id, name: concept.name },
-      interpretation: normalizeInterpret(extractJSON(content)),
+      interpretation: normalizeInterpret(parsed),
       meta: { model: MODEL, source: LIBRARY_REL }
     });
   } catch (err) {

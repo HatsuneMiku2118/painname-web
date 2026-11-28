@@ -68,6 +68,19 @@ if (-not $key -and -not $env:LLM_API_KEY) {
 }
 
 if ($key) { $env:LLM_API_KEY = $key }
+
+# 可选：服务商地址与模型名也可以写在本地文件里，避免每次手设环境变量
+$baseFile = Join-Path $root 'llm.base'
+$modelFile = Join-Path $root 'llm.model'
+if (-not $env:LLM_BASE_URL -and (Test-Path $baseFile)) {
+  $line = Get-Content -Path $baseFile -TotalCount 1 -ErrorAction SilentlyContinue
+  if ($line) { $env:LLM_BASE_URL = $line.Trim() }
+}
+if (-not $env:LLM_MODEL -and (Test-Path $modelFile)) {
+  $line = Get-Content -Path $modelFile -TotalCount 1 -ErrorAction SilentlyContinue
+  if ($line) { $env:LLM_MODEL = $line.Trim() }
+}
+
 if ($env:LLM_API_KEY) {
   if (-not $env:LLM_MODEL) { $env:LLM_MODEL = 'glm-4-flash' }
   Write-Host ("  模型：{0}（已配置 Key）" -f $env:LLM_MODEL) -ForegroundColor Green

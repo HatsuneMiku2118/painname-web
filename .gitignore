@@ -1,4 +1,6 @@
 llm.key
+llm.base
+llm.model
 .env
 .env.local
 config.local.*

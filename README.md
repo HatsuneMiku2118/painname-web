@@ -35,6 +35,18 @@ Windows 也可以双击 `启动预览.cmd` 或运行 `start.ps1`，脚本会检�
 | `PORT` | `8123` | 端口（云端由平台注入） |
 | `HOST` | `127.0.0.1` | 云端设为 `0.0.0.0` |
 
+本地也可以把地址和模型名写进文件，`start.ps1` 会自动读取（优先级低于同名环境变量）：
+
+| 文件 | 内容 | 示例 |
+|---|---|---|
+| `llm.key` | API Key | `sk-...` |
+| `llm.base` | OpenAI 兼容地址 | `https://ws-xxxx.cn-beijing.maas.aliyuncs.com/compatible-mode/v1` |
+| `llm.model` | 模型 id | `deepseek-v4.1-flash-1017` |
+
+三个文件都在 `.gitignore` 里，不会被提交。
+
+> 阿里云百炼的私有业务空间地址形如 `https://ws-<workspaceId>.cn-beijing.maas.aliyuncs.com/compatible-mode/v1`，只能调用该空间里已开通的模型；模型广场里没开通的模型会返回 `The product is not activated`。
+
 ---
 
 ## 目录结构
@@ -151,9 +163,15 @@ python eval/run_eval.py        # 跑匹配集 / 追问集 / 报告契约，输�
 python eval/coverage.py        # 标签覆盖分析，输出 coverage.md
 ```
 
-当前基线（0.1.5，122 条匹配集）：Top-1 95.3%、Top-3 100%、负例拒答 89.7%、追问触发 6/6、误触发 0、接口错误 0。
+当前基线（0.1.5，122 条匹配集，模型 `deepseek-v4.1-flash-1017`）：Top-1 98.4%、Top-3 100%、负例拒答 94.8%、追问触发 6/6、误触发 0、接口错误 0。
 
-> 0.1.5 按需求把识别结果从「1–2 个」放宽到「3–4 个候选」，Top-1 与拒答率各下降约 1–9 个百分点：模型更倾向为边缘案例凑满候选。这是产品要求带来的取舍，不是模型退化；如需更高拒答率，可把候选数退回 1–2 个。
+> 0.1.5 曾用 `glm-4-flash` 跑出 Top-1 95.3%、拒答 89.7%。换成 DeepSeek V4.1 Flash（阿里云百炼私有业务空间）后，Top-1 提升 3.1 个百分点、拒答提升 5.1 个百分点，单条延迟从约 6 秒降到约 1.5 秒。
+
+模型接入的两个必要参数（代码已内置，见 `server.mjs` 的 `callModel`）：
+
+- 百炼系模型：`enable_thinking: false`，否则 `reasoning_content` 会吃光 `max_tokens`，正文为空；
+- 智谱 GLM-4.5+：`thinking: {type: "disabled"}`，同理；
+- 结构化接口（识别 / 解释 / 报告）解析失败时会自动补一句修复提示重试一次。
 
 评测集构成：
 
