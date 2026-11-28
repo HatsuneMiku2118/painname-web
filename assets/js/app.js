@@ -16,7 +16,8 @@
     aiTalk: null,
     retry: null,
     failNext: false,
-    forceNoMatch: false
+    forceNoMatch: false,
+    identifyCancelled: false
   };
 
   const viewEl = document.getElementById('view');
@@ -25,6 +26,16 @@
   const liveEl = document.getElementById('live');
   const demoPanel = document.getElementById('demoPanel');
   const demoToggle = document.getElementById('demoToggle');
+  const topbarEl = document.querySelector('.topbar');
+
+  // 演示面板是 QA 工具，正式站点默认不出现，避免浮动控件压住正文。
+  // 需要时用 ?demo=1 打开；本地开发始终可用。
+  const DEMO_ENABLED = /(^|[?&])demo=1(&|$)/.test(location.search) ||
+    ['localhost', '127.0.0.1', '[::1]'].indexOf(location.hostname) !== -1;
+  if (!DEMO_ENABLED && demoToggle) {
+    demoToggle.hidden = true;
+    if (demoPanel) demoPanel.hidden = true;
+  }
 
   const CHIPS = [
     { label: '恋爱中的不安', text: '他几个小时没有回我消息，我一直看手机，担心他其实没那么在乎我。' },
@@ -173,12 +184,46 @@
     else if (State.view === 'understand') renderUnderstand();
     else if (State.view === 'growth') renderGrowth();
     try { viewEl.focus({ preventScroll: true }); } catch (err) { /* noop */ }
+    syncTopbarHeight();
   }
 
   function goView(next) {
     State.view = next;
     render();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ---------------- 通用：吸顶高度、进行中状态 ---------------- */
+
+  /**
+   * 实测顶栏高度写入 --topbar-h。
+   * 板块导航与顶栏都是 sticky，顶栏高度写死会让两者吸顶后叠在一起，
+   * 顶栏里的品牌与「数据说明 / 我的档案」会被完全遮住。
+   */
+  function syncTopbarHeight() {
+    if (!topbarEl) return;
+    const h = Math.round(topbarEl.getBoundingClientRect().height);
+    if (h > 0) document.documentElement.style.setProperty('--topbar-h', h + 'px');
+  }
+
+  /** 按钮进入 / 退出「进行中」：禁用 + 转圈 + aria-busy，并保留原按钮文案 */
+  function setPending(btn, on, label) {
+    if (!btn) return;
+    if (on) {
+      if (btn.dataset.idleHtml === undefined) btn.dataset.idleHtml = btn.innerHTML;
+      btn.classList.add('is-pending');
+      btn.setAttribute('aria-busy', 'true');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="btn-spin" aria-hidden="true"></span><span>' + (label || '处理中…') + '</span>';
+    } else {
+      btn.classList.remove('is-pending');
+      btn.removeAttribute('aria-busy');
+      btn.disabled = false;
+      if (btn.dataset.idleHtml !== undefined) {
+        btn.innerHTML = btn.dataset.idleHtml;
+        delete btn.dataset.idleHtml;
+      }
+    }
   }
 
   /* ---------------- 首页 ---------------- */
@@ -299,9 +344,12 @@
         '<h2>我在概念库里对照一下</h2>' +
         '<p class="sub">只使用库里的条目，不会凭空造一个名字。</p>' +
       '</div>' +
-      '<section class="chat" aria-label="对话">' + thread +
+      '<section class="chat" aria-label="对话" aria-busy="true">' + thread +
         '<div class="chat-row is-ai"><div class="bubble is-ai thinking">正在整理你的描述<span class="dots"><i></i><i></i><i></i></span></div></div>' +
-      '</section>';
+      '</section>' +
+      '<div class="busy-hint">模型响应通常要几秒。如果一直不动，可以先用本地规则继续。' +
+        '<br><button class="btn btn-ghost" type="button" data-action="identify-local">先用本地规则识别</button>' +
+      '</div>';
   }
 
   function renderCandidates(record) {
@@ -473,7 +521,10 @@
 
   function renderResonancePage(concept, u) {
     const excerpt = clip(String(State.record.raw || '').replace(/\s+/g, ' '), 46);
-    const sentence = '你提到「' + excerpt + '」。' + concept.scene;
+    // 概念库里没有 scene 字段，这里按 engine 的取法回落到 indicators[0]，
+    // 否则每个概念的共振句都会渲染出字面量 undefined。
+    const scene = concept.scene || (concept.indicators || [])[0] || '';
+    const sentence = '你提到「' + excerpt + '」。' + scene;
 
     viewEl.innerHTML =
       '<div class="page-head">' +
@@ -627,6 +678,7 @@
         const local = localInterpret(concept, u);
         local.correction = correction || '';
         u.interpret = local;
+        toast('模型暂时不可用，先用本地规则给一个保守版本');
       })
       .then(function () {
         u.interpretLoading = false;
@@ -639,7 +691,7 @@
     if (u.interpretLoading || !u.interpret) {
       viewEl.innerHTML =
         '<div class="page-head"><span class="kicker">板块二 · 理解与探索</span>' + stepDots(3, 5) + '<h2>正在把这段经历和概念对上</h2></div>' +
-        '<div class="loader" role="status"><div class="loader-mark" aria-hidden="true"></div><p class="loader-text">正在整理你说过的情境与回应</p><p class="loader-dim">如果模型不可用，会先用本地规则给一个保守版本</p></div>';
+        '<div class="loader" role="status" aria-busy="true"><div class="loader-mark" aria-hidden="true"></div><p class="loader-text">正在整理你说过的情境与回应</p><p class="loader-dim">如果模型不可用，会先用本地规则给一个保守版本</p></div>';
       return;
     }
 
@@ -1029,7 +1081,8 @@
       '<p class="quiet-note">已经带入你确认的情境和练习，不需要重复说明。</p>' +
       '<div class="ai-talk-log" id="aiTalkLog"><p class="quiet-note">想说什么都可以。AI 会先回应你的情况，再问你是否需要建议。</p></div>' +
       '<form data-form="ai-talk">' +
-        '<textarea name="say" maxlength="300" rows="2" placeholder="比如：我试了，但说到一半就卡住了。"></textarea>' +
+        '<label class="sr-only" for="aiTalkSay">说说这次尝试的情况</label>' +
+        '<textarea id="aiTalkSay" name="say" maxlength="300" rows="2" placeholder="比如：我试了，但说到一半就卡住了。"></textarea>' +
         '<div class="row-actions"><button class="btn btn-primary" type="submit">发送</button></div>' +
       '</form>' +
       '<p class="quiet-note" data-context="' + esc(context) + '"></p>'
@@ -1039,9 +1092,13 @@
   function renderAITalk() {
     const root = document.getElementById('aiTalkLog');
     if (!root || !State.aiTalk) return;
-    root.innerHTML = State.aiTalk.messages.map(function (m) {
+    let html = State.aiTalk.messages.map(function (m) {
       return '<div class="ai-msg ' + (m.role === 'user' ? 'is-user' : 'is-ai') + '">' + esc(m.content) + '</div>';
-    }).join('') || '<p class="quiet-note">想说什么都可以。</p>';
+    }).join('');
+    if (State.aiTalk.pending) {
+      html += '<div class="ai-msg is-ai thinking"><span class="dots"><i></i><i></i><i></i></span></div>';
+    }
+    root.innerHTML = html || '<p class="quiet-note">想说什么都可以。</p>';
     root.scrollTop = root.scrollHeight;
   }
 
@@ -1133,6 +1190,7 @@
     }
 
     record.status = 'thinking';
+    State.identifyCancelled = false;
     save();
     render();
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -1147,6 +1205,7 @@
     };
 
     AI.identify(payload).then(function (res) {
+      if (State.identifyCancelled) return;
       if (!State.record || State.record.id !== record.id) return;
 
       if (res.followUps.length && round < 1) {
@@ -1176,6 +1235,7 @@
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       announce(res.candidates.length ? '已经聊完，可以看看这几个可能' : '信息还不够，先到这里');
     }).catch(function () {
+      if (State.identifyCancelled) return;
       if (!State.record || State.record.id !== record.id) return;
       markAIFallback();
       toast('模型暂时不可用，已用本地规则识别');
@@ -1278,15 +1338,25 @@
       g.aiReply = reply;
       save();
       if (g.step === 'feedback') render();
-    }).catch(function () { /* 保留本地回应 */ });
+    }).catch(function () {
+      toast('模型暂时不可用，已保留本地回应');
+    });
   }
 
   /* ---------------- 弹层 ---------------- */
 
+  let modalTrigger = null;
+
   function openModal(html) {
-    modalRoot.innerHTML = '<div class="modal" role="dialog" aria-modal="true">' + html + '</div>';
+    modalTrigger = document.activeElement;
+    modalRoot.innerHTML = '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">' + html + '</div>';
     modalRoot.hidden = false;
     document.body.style.overflow = 'hidden';
+    const title = modalRoot.querySelector('.modal-head h2') || modalRoot.querySelector('h2');
+    if (title) {
+      title.id = 'modalTitle';
+      modalRoot.querySelector('.modal').setAttribute('aria-labelledby', 'modalTitle');
+    }
     const first = modalRoot.querySelector('.btn');
     if (first) first.focus();
   }
@@ -1295,6 +1365,12 @@
     modalRoot.hidden = true;
     modalRoot.innerHTML = '';
     document.body.style.overflow = '';
+    // 关闭后把焦点还给触发它的按钮，否则键盘用户会掉回页面顶部
+    const back = modalTrigger;
+    modalTrigger = null;
+    if (back && document.body.contains(back)) {
+      try { back.focus({ preventScroll: true }); } catch (err) { /* noop */ }
+    }
   }
 
   function privacyModal() {
@@ -1330,7 +1406,7 @@
     openModal(
       '<div class="modal-head"><span class="kicker">我的档案</span><h2>这条记录</h2></div>' +
       '<div class="archive-quote">「' + esc(clip(r.raw, 120)) + '」</div>' +
-      '<div style="margin-top:16px">' +
+      '<div class="archive-meta">' +
         '<div class="data-row"><span>识别结果</span><span>' + esc(concept ? concept.name + '（' + r.confidence + '）' : '尚未可靠命名') + '</span></div>' +
         '<div class="data-row"><span>创建时间</span><span>' + esc(fmt(r.createdAt)) + '</span></div>' +
         '<div class="data-row"><span>理解进度</span><span>' + esc(understandProgress(r)) + '</span></div>' +
@@ -1341,7 +1417,7 @@
         '<button class="btn btn-quiet" type="button" data-action="delete-record">删除这条记录</button>' +
         '<button class="btn btn-quiet" type="button" data-action="wipe-all">清空全部数据</button>' +
       '</div>' +
-      '<p style="font-size:12.5px;color:#8B8078;margin-top:16px">删除会同时移除对应的报告、成长记录和里程碑。</p>'
+      '<p class="archive-note">删除会同时移除对应的报告、成长记录和里程碑。</p>'
     );
   }
 
@@ -1697,6 +1773,13 @@
         announce('全部本地数据已清空');
         toast('已清空全部本地数据');
         break;
+      case 'identify-local':
+        if (State.record) {
+          State.identifyCancelled = true;
+          fallbackLocal(State.record);
+          toast('已改用本地规则识别');
+        }
+        break;
       case 'demo-at01':
         fillAndGo('他几个小时没有回我消息，我一直看手机，担心他其实没那么在乎我。');
         break;
@@ -1727,7 +1810,7 @@
       input.focus();
     }
     if (demoPanel) demoPanel.hidden = true;
-    demoToggle.setAttribute('aria-expanded', 'false');
+    if (demoToggle) demoToggle.setAttribute('aria-expanded', 'false');
   }
 
   document.addEventListener('submit', function (e) {
@@ -1825,12 +1908,22 @@
           ].join('\n')
         }
       ].concat(State.aiTalk.messages);
+      const sendBtn = form.querySelector('button[type="submit"]');
+      const sayInput = form.elements.say;
+      State.aiTalk.pending = true;
+      setPending(sendBtn, true, '发送中…');
+      if (sayInput) sayInput.disabled = true;
+      renderAITalk();
       AI.chat(messages, 400).then(function (reply) {
         State.aiTalk.messages.push({ role: 'assistant', content: reply });
-        renderAITalk();
       }).catch(function () {
         State.aiTalk.messages.push({ role: 'assistant', content: '模型暂时不可用。你说的这些已经留在这条记录里，可以稍后再试。' });
+      }).then(function () {
+        State.aiTalk.pending = false;
+        setPending(sendBtn, false);
+        if (sayInput) sayInput.disabled = false;
         renderAITalk();
+        if (sayInput) { try { sayInput.focus({ preventScroll: true }); } catch (err) { /* noop */ } }
       });
       return;
     }
@@ -1859,14 +1952,32 @@
   });
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && !modalRoot.hidden) closeModal();
+    if (modalRoot.hidden) return;
+    if (e.key === 'Escape') { closeModal(); return; }
+    if (e.key !== 'Tab') return;
+
+    // 焦点锁在弹层内部，避免 Tab 跑到弹层后面的页面上
+    const items = modalRoot.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    if (!items.length) return;
+    const list = Array.prototype.slice.call(items);
+    const first = list[0];
+    const last = list[list.length - 1];
+    const active = document.activeElement;
+    if (e.shiftKey) {
+      if (active === first || !modalRoot.contains(active)) { e.preventDefault(); last.focus(); }
+    } else if (active === last || !modalRoot.contains(active)) {
+      e.preventDefault();
+      first.focus();
+    }
   });
 
   modalRoot.addEventListener('click', function (e) {
     if (e.target === modalRoot) closeModal();
   });
 
-  demoToggle.addEventListener('click', function () {
+  if (demoToggle) demoToggle.addEventListener('click', function () {
     const open = demoPanel.hidden;
     demoPanel.hidden = !open;
     demoToggle.setAttribute('aria-expanded', String(open));
@@ -1876,6 +1987,14 @@
 
   load();
   render();
+  syncTopbarHeight();
+  window.addEventListener('resize', syncTopbarHeight);
+  if (window.ResizeObserver && topbarEl) {
+    new ResizeObserver(syncTopbarHeight).observe(topbarEl);
+  }
+  if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+    document.fonts.ready.then(syncTopbarHeight);
+  }
 
   if (location.protocol === 'file:') {
     const el = document.getElementById('aiStatus');
