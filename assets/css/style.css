@@ -41,6 +41,7 @@
   --surface-selected: #FFF8F3;
   --surface-note: rgba(251, 246, 240, .7);
   --surface-ai-reply: rgba(233, 239, 229, .45);
+  --surface-warm: rgba(246, 238, 230, .55);   /* 付费墙等提示卡：暖色半透明底 */
   --surface-toast: rgba(35, 30, 26, .92);
   --surface-tag-guess: #fff;
   --surface-fact: #FAFCF8;
@@ -140,6 +141,7 @@
   --surface-selected: #302620;
   --surface-note: rgba(42, 37, 31, .7);
   --surface-ai-reply: rgba(157, 179, 150, .14);
+  --surface-warm: rgba(58, 42, 34, .55);
   --surface-toast: rgba(240, 234, 226, .92);
   --surface-tag-guess: #2A251F;
   --surface-fact: #232A22;
@@ -1706,10 +1708,10 @@ details.acc > summary:focus-visible { outline: 2px solid var(--accent); outline-
 .paywall-card {
   padding: 24px 22px;
   border-color: var(--accent-soft);
-  background: rgba(246, 238, 230, .55);
+  background: var(--surface-warm);
 }
-.paywall-card h3 { margin: 0 0 8px; font-size: 17px; }
-.paywall-card p { margin: 0 0 12px; font-size: 14px; line-height: 1.8; color: var(--ink-2); }
+.paywall-card h3 { margin: 0 0 8px; font-size: var(--fs-2xl); }
+.paywall-card p { margin: 0 0 12px; font-size: var(--fs-base); line-height: 1.8; color: var(--ink-2); }
 .paywall-card .row-actions { margin-top: 4px; }
 #accountBtn {
   max-width: 10em;
