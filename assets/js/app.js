@@ -28,6 +28,67 @@
   const demoToggle = document.getElementById('demoToggle');
   const topbarEl = document.querySelector('.topbar');
 
+  /* ---------------- 主题（深浅色） ----------------
+     三态：auto（跟随系统）/ light / dark。
+     CSS 侧只有一份 :root[data-theme="dark"] 令牌块，这里只负责把结果写进 <html>。
+     首屏防闪烁由 index.html <head> 里的引导脚本完成（先于样式表求值）。 */
+
+  const THEME_KEY = 'painname-theme';
+  const THEME_META = { light: '#F8F3ED', dark: '#16130F' };
+  const THEME_ICON = { auto: '◐', light: '☀', dark: '☾' };
+  const THEME_NAME = { auto: '跟随系统', light: '浅色', dark: '深色' };
+  const THEME_ORDER = ['auto', 'light', 'dark'];
+
+  const Theme = {
+    mode: 'auto',
+    resolved: 'light',
+
+    init: function () {
+      let mode = 'auto';
+      try { mode = localStorage.getItem(THEME_KEY) || 'auto'; } catch (err) { mode = 'auto'; }
+      if (THEME_ORDER.indexOf(mode) === -1) mode = 'auto';
+      this.mode = mode;
+      this.sync();
+
+      // 跟随系统时，系统主题变化要实时跟着变
+      const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+      if (mq) {
+        const onChange = function () { if (Theme.mode === 'auto') Theme.sync(); };
+        if (mq.addEventListener) mq.addEventListener('change', onChange);
+        else if (mq.addListener) mq.addListener(onChange);
+      }
+    },
+
+    sync: function () {
+      const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+      this.resolved = this.mode === 'auto' ? (mq && mq.matches ? 'dark' : 'light') : this.mode;
+      const root = document.documentElement;
+      root.setAttribute('data-theme', this.resolved);
+      root.setAttribute('data-theme-mode', this.mode);
+      const meta = document.getElementById('themeColor');
+      if (meta) meta.setAttribute('content', THEME_META[this.resolved]);
+      this.render();
+    },
+
+    cycle: function () {
+      const i = THEME_ORDER.indexOf(this.mode);
+      this.mode = THEME_ORDER[(i + 1) % THEME_ORDER.length];
+      try { localStorage.setItem(THEME_KEY, this.mode); } catch (err) { /* 隐私模式降级为内存态 */ }
+      this.sync();
+      announce('主题：' + THEME_NAME[this.mode]);
+    },
+
+    render: function () {
+      const btn = document.getElementById('themeBtn');
+      if (!btn) return;
+      const icon = document.getElementById('themeIcon');
+      if (icon) icon.textContent = THEME_ICON[this.mode];
+      const label = '主题：' + THEME_NAME[this.mode];
+      btn.setAttribute('title', label);
+      btn.setAttribute('aria-label', label + '，点击切换');
+    }
+  };
+
   // 演示面板是 QA 工具，正式站点默认不出现，避免浮动控件压住正文。
   // 需要时用 ?demo=1 打开；本地开发始终可用。
   const DEMO_ENABLED = /(^|[?&])demo=1(&|$)/.test(location.search) ||
@@ -1449,6 +1510,9 @@
     const action = el.getAttribute('data-action');
 
     switch (action) {
+      case 'cycle-theme':
+        Theme.cycle();
+        break;
       case 'go-home':
         closeModal();
         goView('home');
@@ -1987,6 +2051,7 @@
 
   load();
   render();
+  Theme.init();
   syncTopbarHeight();
   window.addEventListener('resize', syncTopbarHeight);
   if (window.ResizeObserver && topbarEl) {

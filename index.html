@@ -3,10 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F8F3ED">
+<meta name="theme-color" content="#F8F3ED" id="themeColor">
 <title>给痛苦一个名字</title>
 <meta name="description" content="不是给人贴标签，而是给痛苦一个名字。基于专业概念库的情感痛苦识别、理解与成长工具。">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='%239E5A45' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%239E5A45' opacity='.7'/%3E%3C/svg%3E">
+<!-- 主题：先于样式表求值，深色模式下不闪白 -->
+<script>
+(function () {
+  var mode = 'auto';
+  try { mode = localStorage.getItem('painname-theme') || 'auto'; } catch (e) { mode = 'auto'; }
+  if (mode !== 'light' && mode !== 'dark') mode = 'auto';
+  var dark = mode === 'dark' || (mode === 'auto' && window.matchMedia &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches);
+  var root = document.documentElement;
+  root.setAttribute('data-theme', dark ? 'dark' : 'light');
+  root.setAttribute('data-theme-mode', mode);
+})();
+</script>
+<link rel="preload" href="assets/fonts/NotoSerifSC-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
@@ -20,6 +34,9 @@
     <nav class="topnav" aria-label="辅助功能">
       <button class="ghost-btn" type="button" data-action="open-privacy">数据说明</button>
       <button class="ghost-btn" type="button" data-action="open-archive">我的档案</button>
+      <button class="theme-btn" id="themeBtn" type="button" data-action="cycle-theme" title="主题：跟随系统" aria-label="主题：跟随系统">
+        <span class="theme-icon" id="themeIcon" aria-hidden="true">◐</span>
+      </button>
     </nav>
   </div>
 </header>
