@@ -8,6 +8,7 @@
   const D = window.PAIN_DATA;
   const E = window.Engine;
   const AI = window.AI;
+  const Auth = window.Auth;
   const KEY = 'painname_v1';
 
   const State = {
@@ -17,7 +18,8 @@
     retry: null,
     failNext: false,
     forceNoMatch: false,
-    identifyCancelled: false
+    identifyCancelled: false,
+    fullDirections: null
   };
 
   const viewEl = document.getElementById('view');
@@ -240,6 +242,7 @@
 
   function render() {
     stepperEl.innerHTML = stepperHTML();
+    renderAccountButton();
     if (State.view === 'home') renderHome();
     else if (State.view === 'identify') renderIdentify();
     else if (State.view === 'understand') renderUnderstand();
@@ -871,9 +874,121 @@
   /* ---------------- 板块三：承接 → 方向 → 练习 → 清单 → 反馈 → 回顾 ---------------- */
 
   function directionsForConcept(concept) {
+    // 已解锁时使用服务端下发的完整方向；未解锁或未登录时用本地免费投影
+    if (State.fullDirections && concept && State.fullDirections.conceptId === concept.id &&
+        State.fullDirections.list.length) {
+      return State.fullDirections.list;
+    }
     const ids = concept && Array.isArray(concept.directions) ? concept.directions : [];
     const list = ids.map(function (id) { return D.directions[id]; }).filter(Boolean);
     return list.length ? list : [D.directions.d_general].filter(Boolean);
+  }
+
+  function isUnlocked() {
+    return !!(Auth && Auth.unlocked && Auth.unlocked());
+  }
+
+  function renderAccountButton() {
+    const btn = document.getElementById('accountBtn');
+    if (!btn || !Auth) return;
+    if (Auth.user && Auth.user()) {
+      btn.textContent = (Auth.user().nickname || '已登录') + ' · 退出';
+      btn.setAttribute('data-action', 'auth-logout');
+    } else if (Auth.degraded && Auth.degraded()) {
+      btn.textContent = '账号暂不可用';
+      btn.setAttribute('data-action', 'account-degraded');
+    } else {
+      btn.textContent = '登录';
+      btn.setAttribute('data-action', 'auth-login');
+    }
+  }
+
+  function loadFullDirections() {
+    if (!Auth || !Auth.unlocked || !Auth.unlocked() || !State.record) return Promise.resolve();
+    const concept = conceptOf(State.record);
+    if (!concept) return Promise.resolve();
+    return Auth.practices(concept.id).then(function (res) {
+      State.fullDirections = { conceptId: concept.id, list: (res && res.directions) || [] };
+    }).catch(function () { /* 失败时退回本地免费投影 */ });
+  }
+
+  function startUnlock() {
+    if (!Auth) {
+      toast('账号服务未加载，请刷新页面');
+      return;
+    }
+    if (Auth.degraded && Auth.degraded()) {
+      toast('账号服务暂不可用，免费功能不受影响');
+      return;
+    }
+    if (!Auth.user || !Auth.user()) {
+      toast('先登录，再解锁完整练习');
+      Auth.login();
+      return;
+    }
+    Auth.createOrder().then(function (res) {
+      if (res && res.payUrl) {
+        location.href = res.payUrl;
+        return;
+      }
+      throw new Error('bad_order');
+    }).catch(function (err) {
+      const code = err && err.data && err.data.error ? err.data.error : (err && err.message);
+      if (code === 'ORDER_EXISTS') {
+        Auth.loadMe().then(loadFullDirections).then(function () {
+          toast('已经解锁过了');
+          render();
+        });
+        return;
+      }
+      if (code === 'AUTH_REQUIRED') {
+        Auth.login();
+        return;
+      }
+      toast('暂时无法下单，请稍后再试');
+    });
+  }
+
+  function pollOrder(outTradeNo, tries) {
+    const left = typeof tries === 'number' ? tries : 10;
+    Auth.orderStatus(outTradeNo).then(function (res) {
+      if (res && res.status === 'paid') {
+        return Auth.loadMe().then(loadFullDirections).then(function () {
+          toast('已解锁完整练习与 AI 对话');
+          render();
+        });
+      }
+      if (left > 1) window.setTimeout(function () { pollOrder(outTradeNo, left - 1); }, 2000);
+      else toast('支付结果还在确认中，稍后刷新页面即可');
+    }).catch(function () {
+      if (left > 1) window.setTimeout(function () { pollOrder(outTradeNo, left - 1); }, 2000);
+    });
+  }
+
+  function handlePayReturn() {
+    const params = new URLSearchParams(location.search);
+    if (params.get('pay') !== 'return') return;
+    const no = params.get('no') || '';
+    try {
+      history.replaceState(null, '', location.pathname);
+    } catch (err) { /* 忽略 */ }
+    if (no) pollOrder(no, 12);
+  }
+
+  function paywallHTML(message) {
+    const loggedIn = !!(Auth && Auth.user && Auth.user());
+    return '<section class="card paywall-card">' +
+      '<h3>解锁全部方向与 AI 对话</h3>' +
+      '<p>一次买断 ¥19.9，包含这个概念下的全部方向和完整练习，以及 AI 对话 30 轮。不是订阅，不会自动续费。</p>' +
+      (message ? '<p class="quiet-note">' + esc(message) + '</p>' : '') +
+      '<div class="row-actions">' +
+        '<button class="btn btn-primary" type="button" data-action="pay-unlock">' +
+          (loggedIn ? '去支付' : '登录并解锁') +
+        '</button>' +
+        '<button class="btn btn-quiet" type="button" data-action="pay-later">先用免费的</button>' +
+      '</div>' +
+      '<p class="quiet-note">危机提示与求助信息永远免费，不需要购买。</p>' +
+    '</section>';
   }
 
   function renderGrowth() {
@@ -934,7 +1049,9 @@
   }
 
   function renderDirectionPick(concept, g) {
-    const list = directionsForConcept(concept);
+    const all = directionsForConcept(concept);
+    const unlocked = isUnlocked();
+    const list = unlocked ? all : all.slice(0, 1);
     viewEl.innerHTML =
       '<div class="page-head">' +
         '<span class="kicker">板块三 · 行动与成长</span>' +
@@ -951,6 +1068,9 @@
           '</article>';
         }).join('') +
       '</div>' +
+      (!unlocked
+        ? paywallHTML('现在先开放第一个方向，完整方向与练习在解锁后可用。')
+        : '') +
       '<div class="row-actions"><button class="btn btn-quiet" type="button" data-action="g-back-carry">先回去看看</button></div>';
   }
 
@@ -959,6 +1079,8 @@
     if (!dir) { g.step = 'direction'; save(); render(); return; }
     const u = ensureUnderstand(State.record);
     const chosen = g.practices.map(function (p) { return p.id; });
+    const unlocked = isUnlocked();
+    const tasks = unlocked ? dir.tasks.slice(0, 3) : dir.tasks.slice(0, 1);
 
     viewEl.innerHTML =
       '<div class="page-head">' +
@@ -967,7 +1089,7 @@
         '<h2>' + esc(dir.title) + '</h2>' +
         '<p class="sub">下面是最多三个轻量练习。可以选一个，也可以都不选。</p>' +
       '</div>' +
-      dir.tasks.slice(0, 3).map(function (t) {
+      dir.tasks.slice(0, unlocked ? 3 : 1).map(function (t) {
         const p = practiceFrom(dir, t, u);
         const added = chosen.indexOf(p.id) > -1;
         return '<article class="card practice-card">' +
@@ -982,6 +1104,9 @@
           '</div>' +
         '</article>';
       }).join('') +
+      (!unlocked
+        ? paywallHTML('这个方向还有更多练习，解锁后可以一起用。')
+        : '') +
       '<div class="row-actions">' +
         '<button class="btn btn-primary" type="button" data-action="g-view-list">看看我的清单</button>' +
         '<button class="btn btn-quiet" type="button" data-action="g-back-directions">换个方向</button>' +
@@ -1009,13 +1134,18 @@
                 (p.status === 'active'
                   ? '<button class="btn btn-quiet" type="button" data-action="g-pause-practice" data-id="' + p.id + '">暂时不做</button>'
                   : '<button class="btn btn-quiet" type="button" data-action="g-resume-practice" data-id="' + p.id + '">重新放回</button>') +
-                '<button class="btn btn-quiet" type="button" data-action="g-ai-talk" data-id="' + p.id + '">和 AI 聊聊</button>' +
+                (isUnlocked()
+                  ? '<button class="btn btn-quiet" type="button" data-action="g-ai-talk" data-id="' + p.id + '">和 AI 聊聊</button>'
+                  : '') +
                 '<button class="btn btn-quiet" type="button" data-action="g-remove-practice" data-id="' + p.id + '">移除</button>' +
               '</div>' +
             '</article>';
           }).join('')
         : '<section class="card"><p>清单还是空的，这完全可以。你可以先去看看方向，也可以什么都不选。</p>' +
             '<div class="row-actions"><button class="btn btn-primary" type="button" data-action="g-back-directions">看看方向</button></div></section>') +
+      (!isUnlocked()
+        ? paywallHTML('解锁后可以和 AI 聊聊每次尝试，也可以用完整的方向与练习。')
+        : '') +
       '<div class="row-actions">' +
         (list.length ? '<button class="btn btn-primary" type="button" data-action="g-to-review">回顾一下</button>' : '') +
         '<button class="btn btn-quiet" type="button" data-action="g-back-directions">再挑一个方向</button>' +
@@ -1368,6 +1498,7 @@
    * 失败时保留上一步的本地回应，不阻塞流程。
    */
   function sendFeedbackToAI(practice, choice, note) {
+    if (!isUnlocked()) return;
     if (!AI || !AI.available() || location.protocol === 'file:') return;
     const record = State.record;
     const concept = conceptOf(record);
@@ -1806,11 +1937,37 @@
         break;
       }
       case 'g-ai-talk': {
+        if (!isUnlocked()) {
+          toast('AI 对话在解锁后可用，免费部分不受影响');
+          break;
+        }
         const g = ensureGrowth(State.record);
         const practice = g.practices.filter(function (p) { return p.id === el.getAttribute('data-id'); })[0];
         aiTalkModal(practice || null);
         break;
       }
+
+      case 'auth-login':
+        if (Auth) Auth.login();
+        break;
+      case 'auth-logout':
+        if (Auth) {
+          Auth.logout().then(function () {
+            State.fullDirections = null;
+            toast('已退出登录');
+            render();
+          });
+        }
+        break;
+      case 'account-degraded':
+        toast('账号服务暂不可用，免费功能不受影响');
+        break;
+      case 'pay-unlock':
+        startUnlock();
+        break;
+      case 'pay-later':
+        toast('先用免费的这部分继续');
+        break;
 
       case 'open-privacy':
         privacyModal();
@@ -2059,6 +2216,14 @@
   }
   if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
     document.fonts.ready.then(syncTopbarHeight);
+  }
+
+  if (Auth) {
+    Auth.loadMe().then(function () {
+      renderAccountButton();
+      handlePayReturn();
+      if (Auth.unlocked()) loadFullDirections().then(render);
+    });
   }
 
   if (location.protocol === 'file:') {

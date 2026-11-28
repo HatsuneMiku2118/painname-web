@@ -12,9 +12,14 @@ window.AI = (function () {
   function postJSON(url, payload, timeout) {
     const controller = new AbortController();
     const timer = window.setTimeout(function () { controller.abort(); }, timeout || TIMEOUT);
+    const headers = { 'Content-Type': 'application/json' };
+    // 付费权益的接口需要登录态与 CSRF 校验
+    const auth = window.Auth && window.Auth.state ? window.Auth.state() : null;
+    if (auth && auth.csrfToken) headers['X-CSRF-Token'] = auth.csrfToken;
     return fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
+      credentials: 'same-origin',
       body: JSON.stringify(payload),
       signal: controller.signal
     }).then(function (res) {

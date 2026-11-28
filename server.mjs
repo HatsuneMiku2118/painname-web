@@ -19,7 +19,13 @@ import http from 'node:http';
 import { createReadStream, readFileSync, statSync } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+
+import * as db from './lib/db.mjs';
+import * as auth from './lib/auth.mjs';
+import * as alipay from './lib/alipay.mjs';
+import { sendJSON, sendText, readBody, parseCookies, serializeCookie, redirect } from './lib/http.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8123);
@@ -29,6 +35,75 @@ const BASE_URL = (process.env.LLM_BASE_URL || 'https://open.bigmodel.cn/api/paas
 const MODEL = process.env.LLM_MODEL || 'glm-4-flash';
 const LIBRARY_PATH = path.join(ROOT, 'data', 'concepts.json');
 const LIBRARY_REL = 'data/concepts.json';
+
+/* ---------- 账号与支付配置 ---------- */
+
+const PRODUCT = 'growth_unlock';
+const PRICE_CENTS = Number(process.env.PRICE_CENTS || 1990);
+const AI_QUOTA = Number(process.env.AI_QUOTA || 30);
+
+function readLocalFile(name) {
+  try {
+    return readFileSync(path.join(ROOT, name), 'utf8').trim();
+  } catch (err) {
+    return '';
+  }
+}
+
+const DB_URL = (process.env.DATABASE_URL || readLocalFile('db.url')).trim();
+const PUBLIC_BASE = (process.env.BASE_URL || '').replace(/\/+$/, '');
+const SESSION_SECRET = process.env.SESSION_SECRET || '';
+
+// 本地密钥文件（模板已生成，填写后生效；环境变量优先级更高）
+const LOCAL_APP_ID = readLocalFile('alipay.appid');
+const LOCAL_PRIVATE_KEY = readLocalFile('alipay.private');
+const LOCAL_PUBLIC_KEY = readLocalFile('alipay.public');
+
+function realKeyFile(value) {
+  const text = String(value || '').trim();
+  if (!text || text.indexOf('粘贴') > -1) return false;
+  if (text.indexOf('BEGIN') > -1) return true;
+  return text.length > 100 && /^[A-Za-z0-9+/=\s]+$/.test(text);
+}
+
+const LOCAL_APP_ID_OK = /^\d{10,}$/.test(LOCAL_APP_ID);
+const LOCAL_PRIVATE_OK = realKeyFile(LOCAL_PRIVATE_KEY);
+const LOCAL_PUBLIC_OK = realKeyFile(LOCAL_PUBLIC_KEY);
+
+function loadSandboxConfig() {
+  try {
+    return JSON.parse(readFileSync(path.join(ROOT, '.alipay-sandbox.json'), 'utf8'));
+  } catch (err) {
+    return null;
+  }
+}
+
+const ALIPAY_ENV = process.env.ALIPAY_ENV ||
+  ((process.env.ALIPAY_APP_ID || LOCAL_APP_ID_OK) ? 'production' : 'sandbox');
+const sandbox = ALIPAY_ENV === 'sandbox' ? loadSandboxConfig() : null;
+const sandboxApp = (sandbox && Array.isArray(sandbox.appIds) && sandbox.appIds[0]) || null;
+
+alipay.configure({
+  env: ALIPAY_ENV,
+  appId: process.env.ALIPAY_APP_ID || (LOCAL_APP_ID_OK ? LOCAL_APP_ID : '') || (sandboxApp && sandboxApp.appId) || '',
+  privateKey: process.env.ALIPAY_PRIVATE_KEY || (LOCAL_PRIVATE_OK ? LOCAL_PRIVATE_KEY : '') ||
+    (sandboxApp && (sandboxApp.appPrivatePkcsKey || sandboxApp.appPrivateKey)) || '',
+  publicKey: process.env.ALIPAY_PUBLIC_KEY || (LOCAL_PUBLIC_OK ? LOCAL_PUBLIC_KEY : '') ||
+    (sandboxApp && sandboxApp.alipayPublicKey) || '',
+  sellerId: process.env.ALIPAY_SELLER_ID || (sandboxApp && sandboxApp.pid) || '',
+  gateway: process.env.ALIPAY_GATEWAY ||
+    (ALIPAY_ENV === 'sandbox'
+      ? 'https://openapi-sandbox.dl.alipaydev.com/gateway.do'
+      : 'https://openapi.alipay.com/gateway.do'),
+  authUrl: process.env.ALIPAY_AUTH_URL ||
+    (ALIPAY_ENV === 'sandbox'
+      ? 'https://openauth-sandbox.dl.alipaydev.com/oauth2/publicAppAuthorize.htm'
+      : 'https://openauth.alipay.com/oauth2/publicAppAuthorize.htm'),
+  notifyUrl: process.env.ALIPAY_NOTIFY_URL || (PUBLIC_BASE ? PUBLIC_BASE + '/api/pay/notify' : ''),
+  baseUrl: PUBLIC_BASE
+});
+
+auth.configure({ secret: SESSION_SECRET || (DB_URL ? 'local-dev-session-secret' : '') });
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -44,30 +119,6 @@ const MIME = {
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2'
 };
-
-function sendJSON(res, code, data) {
-  const body = JSON.stringify(data);
-  res.writeHead(code, {
-    'Content-Type': 'application/json; charset=utf-8',
-    'Content-Length': Buffer.byteLength(body),
-    'Cache-Control': 'no-store',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'
-  });
-  res.end(body);
-}
-
-async function readBody(req, limit = 1_000_000) {
-  let size = 0;
-  const chunks = [];
-  for await (const chunk of req) {
-    size += chunk.length;
-    if (size > limit) throw new Error('body_too_large');
-    chunks.push(chunk);
-  }
-  return Buffer.concat(chunks).toString('utf8');
-}
 
 /* ---------- 概念库：服务端读取（模型只能看到这里的内容） ---------- */
 
@@ -874,6 +925,16 @@ async function handleChat(req, res) {
     return;
   }
 
+  // 板块三的 AI 对话属于付费权益，需要登录 + 权益 + 配额
+  if (!db.isReady()) return httpError(res, 503, 'SERVICE_DEGRADED');
+  const session = await auth.requireUser(req, res);
+  if (!session) return;
+  if (!auth.verifyCsrf(req, session)) return httpError(res, 403, 'CSRF');
+  const chatPlan = await db.getPlan(session.user.id, PRODUCT, AI_QUOTA);
+  if (!chatPlan.unlocked) return httpError(res, 403, 'ENTITLEMENT_REQUIRED');
+  const remaining = await db.consumeAiQuota(session.user.id, PRODUCT, AI_QUOTA);
+  if (remaining === null) return httpError(res, 429, 'RATE_LIMITED');
+
   let payload;
   try {
     payload = JSON.parse(await readBody(req));
@@ -929,8 +990,11 @@ async function handleStatic(req, res) {
   }
   if (pathname === '/' || pathname === '') pathname = '/index.html';
 
-  // data/ 是服务端数据源，不通过静态目录对外提供
-  if (pathname === '/data' || pathname.indexOf('/data/') === 0) {
+  // data/ 是服务端数据源，不通过静态目录对外提供；lib/ 与本地配置文件同理
+  if (pathname === '/data' || pathname.indexOf('/data/') === 0 ||
+      pathname === '/lib' || pathname.indexOf('/lib/') === 0 ||
+      pathname === '/db.url' || pathname === '/llm.key' || pathname === '/llm.base' ||
+      pathname === '/llm.model' || pathname.indexOf('/.alipay-sandbox') === 0) {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Not Found');
     return;
   }
@@ -959,6 +1023,199 @@ async function handleStatic(req, res) {
   }
 }
 
+/* ---------- 账号与支付 ---------- */
+
+const NEXT_COOKIE = 'pn_next';
+
+function httpError(res, code, error) {
+  sendJSON(res, code, { ok: false, error: error });
+}
+
+function clearCookie(name) {
+  return serializeCookie(name, '', { maxAge: 0, httpOnly: true, secure: process.env.COOKIE_SECURE === '1' });
+}
+
+async function handleAuthStart(req, res, url) {
+  if (!PUBLIC_BASE || !alipay.isConfigured()) return httpError(res, 503, 'PAY_UNAVAILABLE');
+  const state = crypto.randomBytes(16).toString('hex');
+  const next = auth.safeNext(url.searchParams.get('next'));
+  redirect(res, alipay.buildAuthUrl(state, PUBLIC_BASE + '/api/auth/alipay/callback'), [
+    auth.stateCookie(state),
+    serializeCookie(NEXT_COOKIE, next, { maxAge: 600, httpOnly: true, secure: process.env.COOKIE_SECURE === '1' })
+  ]);
+}
+
+async function handleAuthCallback(req, res, url) {
+  const state = url.searchParams.get('state') || '';
+  const stored = auth.readState(req);
+  if (!state || !stored || state !== stored) {
+    redirect(res, '/?auth=state', [clearCookie('pn_state'), clearCookie(NEXT_COOKIE)]);
+    return;
+  }
+  const code = url.searchParams.get('auth_code') || url.searchParams.get('code') || '';
+  if (!code || !db.isReady()) {
+    redirect(res, '/?auth=fail', [clearCookie('pn_state'), clearCookie(NEXT_COOKIE)]);
+    return;
+  }
+  try {
+    const tokenNode = await alipay.exchangeAuthCode(code);
+    // 新版应用可能启用 openid 配置，授权接口返回 open_id 而不是 user_id
+    const alipayUserId = tokenNode.user_id || tokenNode.open_id;
+    if (!alipayUserId) throw new Error('no_user_id');
+    let nickname = '';
+    let avatar = '';
+    try {
+      const info = await alipay.getUserInfo(tokenNode.access_token);
+      nickname = info.nick_name || '';
+      avatar = info.avatar || '';
+    } catch (err) { /* 昵称拿不到不影响登录 */ }
+    const user = await db.upsertUser(alipayUserId, nickname, avatar);
+    const session = await auth.issueSession(user.id);
+    const next = auth.safeNext(parseCookies(req)[NEXT_COOKIE]);
+    redirect(res, next, [session.cookie, clearCookie('pn_state'), clearCookie(NEXT_COOKIE)]);
+  } catch (err) {
+    redirect(res, '/?auth=fail', [clearCookie('pn_state'), clearCookie(NEXT_COOKIE)]);
+  }
+}
+
+async function handleLogout(req, res) {
+  const session = await auth.readSession(req);
+  if (session) {
+    if (!auth.verifyCsrf(req, session)) return httpError(res, 403, 'CSRF');
+    try { await db.revokeSession(session.sessionId); } catch (err) { /* 忽略 */ }
+  }
+  sendJSON(res, 200, { ok: true }, { 'Set-Cookie': auth.clearSessionCookie() });
+}
+
+async function handleMe(req, res) {
+  const plan = { unlocked: false, aiUsed: 0, aiLimit: AI_QUOTA };
+  if (!db.isReady()) {
+    return sendJSON(res, 200, { ok: true, degraded: true, user: null, plan: plan, csrfToken: '' });
+  }
+  const session = await auth.readSession(req);
+  if (!session) {
+    return sendJSON(res, 200, { ok: true, degraded: false, user: null, plan: plan, csrfToken: '' });
+  }
+  const current = await db.getPlan(session.user.id, PRODUCT, AI_QUOTA);
+  sendJSON(res, 200, {
+    ok: true,
+    degraded: false,
+    user: {
+      id: String(session.user.id).slice(0, 8),
+      nickname: session.user.nickname || '',
+      avatar: session.user.avatar || ''
+    },
+    plan: current,
+    csrfToken: session.csrfToken
+  });
+}
+
+async function handleCreateOrder(req, res) {
+  if (!db.isReady() || !alipay.isConfigured() || !PUBLIC_BASE) return httpError(res, 503, 'PAY_UNAVAILABLE');
+  const session = await auth.requireUser(req, res);
+  if (!session) return;
+  if (!auth.verifyCsrf(req, session)) return httpError(res, 403, 'CSRF');
+  if (!(await auth.rateLimit('order:' + session.user.id, 10, 3600))) return httpError(res, 429, 'RATE_LIMITED');
+
+  const plan = await db.getPlan(session.user.id, PRODUCT, AI_QUOTA);
+  if (plan.unlocked) return httpError(res, 409, 'ORDER_EXISTS');
+
+  let payload = {};
+  try {
+    payload = JSON.parse((await readBody(req)) || '{}');
+  } catch (err) {
+    payload = {};
+  }
+  if (payload.product && payload.product !== PRODUCT) return httpError(res, 400, 'UNKNOWN_PRODUCT');
+
+  const stamp = new Date().toISOString().replace(/[-:TZ.]/g, '').slice(0, 14);
+  const outTradeNo = 'PN' + stamp + crypto.randomBytes(4).toString('hex');
+  await db.createOrder(outTradeNo, session.user.id, PRODUCT, PRICE_CENTS);
+
+  const payUrl = alipay.buildPagePayUrl({
+    outTradeNo: outTradeNo,
+    amountCents: PRICE_CENTS,
+    subject: '给痛苦一个名字 · 完整练习与 AI 对话',
+    returnUrl: PUBLIC_BASE + '/api/pay/return?no=' + encodeURIComponent(outTradeNo)
+  });
+  sendJSON(res, 200, { ok: true, outTradeNo: outTradeNo, payUrl: payUrl, priceCents: PRICE_CENTS });
+}
+
+async function handleOrderStatus(req, res, outTradeNo) {
+  if (!db.isReady()) return httpError(res, 503, 'SERVICE_DEGRADED');
+  const session = await auth.requireUser(req, res);
+  if (!session) return;
+
+  const order = await db.findOrder(outTradeNo);
+  if (!order || order.user_id !== session.user.id) return httpError(res, 404, 'ORDER_NOT_FOUND');
+
+  let paid = order.status === 'paid';
+  if (!paid && alipay.isConfigured()) {
+    try {
+      const node = await alipay.queryTrade(outTradeNo);
+      const status = node.trade_status;
+      if (status === 'TRADE_SUCCESS' || status === 'TRADE_FINISHED') {
+        const paidCents = Math.round(Number(node.total_amount) * 100);
+        if (paidCents === order.amount_cents) {
+          const settled = await db.settleOrder(outTradeNo, node.trade_no || '', {
+            source: 'query',
+            trade_status: status
+          });
+          paid = !!settled.ok;
+        }
+      }
+    } catch (err) { /* 查询失败时保持未支付，前端继续轮询 */ }
+  }
+  sendJSON(res, 200, { ok: true, status: paid ? 'paid' : order.status });
+}
+
+async function handleNotify(req, res) {
+  if (!db.isReady()) return sendText(res, 200, 'failure');
+  let raw = '';
+  try {
+    raw = await readBody(req);
+  } catch (err) {
+    return sendText(res, 200, 'failure');
+  }
+  const params = alipay.parseNotify(raw);
+  const checked = alipay.checkNotify(params);
+  if (!checked.ok) {
+    console.warn('[pay] notify rejected:', checked.reason);
+    return sendText(res, 200, 'failure');
+  }
+  const order = await db.findOrder(params.out_trade_no || '');
+  if (!order) return sendText(res, 200, 'failure');
+  if (Math.round(Number(params.total_amount) * 100) !== order.amount_cents) {
+    return sendText(res, 200, 'failure');
+  }
+  const settled = await db.settleOrder(params.out_trade_no, params.trade_no, params);
+  sendText(res, 200, settled.ok ? 'success' : 'failure');
+}
+
+function handlePayReturn(res, url) {
+  const no = url.searchParams.get('no') || '';
+  redirect(res, '/?pay=return' + (no ? '&no=' + encodeURIComponent(no) : ''));
+}
+
+async function handlePractices(req, res, url) {
+  if (!db.isReady()) return httpError(res, 503, 'SERVICE_DEGRADED');
+  const session = await auth.requireUser(req, res);
+  if (!session) return;
+  if (!(await auth.rateLimit('practices:' + session.user.id, 240, 3600))) return httpError(res, 429, 'RATE_LIMITED');
+
+  const plan = await db.getPlan(session.user.id, PRODUCT, AI_QUOTA);
+  if (!plan.unlocked) return httpError(res, 403, 'ENTITLEMENT_REQUIRED');
+
+  const lib = loadLibrary();
+  const concept = findConcept(lib, url.searchParams.get('conceptId') || '');
+  if (!concept) return httpError(res, 404, 'CONCEPT_NOT_FOUND');
+
+  const all = (lib && lib.directions) || {};
+  const ids = Array.isArray(concept.directions) ? concept.directions : [];
+  const directions = ids.map(function (id) { return all[id]; }).filter(Boolean);
+  sendJSON(res, 200, { ok: true, directions: directions, aiUsed: plan.aiUsed, aiLimit: AI_QUOTA });
+}
+
 const server = http.createServer(async (req, res) => {
   const pathname = (req.url || '').split('?')[0];
 
@@ -978,10 +1235,66 @@ const server = http.createServer(async (req, res) => {
       ok: true,
       configured: !!API_KEY,
       model: MODEL,
+      account: db.status(),
+      pay: alipay.configSummary(),
       library: lib
         ? { source: LIBRARY_REL, total: (lib.concepts || []).length, usable: usableConcepts(lib).length }
         : { source: LIBRARY_REL, missing: true }
     });
+    return;
+  }
+
+  if (pathname === '/api/auth/alipay/start') {
+    if (req.method !== 'GET') return httpError(res, 405, 'METHOD_NOT_ALLOWED');
+    await handleAuthStart(req, res, new URL(req.url, 'http://localhost'));
+    return;
+  }
+
+  if (pathname === '/api/auth/alipay/callback') {
+    if (req.method !== 'GET') return httpError(res, 405, 'METHOD_NOT_ALLOWED');
+    await handleAuthCallback(req, res, new URL(req.url, 'http://localhost'));
+    return;
+  }
+
+  if (pathname === '/api/auth/logout') {
+    if (req.method !== 'POST') return httpError(res, 405, 'METHOD_NOT_ALLOWED');
+    await handleLogout(req, res);
+    return;
+  }
+
+  if (pathname === '/api/me') {
+    if (req.method !== 'GET') return httpError(res, 405, 'METHOD_NOT_ALLOWED');
+    await handleMe(req, res);
+    return;
+  }
+
+  if (pathname === '/api/orders') {
+    if (req.method !== 'POST') return httpError(res, 405, 'METHOD_NOT_ALLOWED');
+    await handleCreateOrder(req, res);
+    return;
+  }
+
+  if (pathname.indexOf('/api/orders/') === 0) {
+    if (req.method !== 'GET') return httpError(res, 405, 'METHOD_NOT_ALLOWED');
+    await handleOrderStatus(req, res, decodeURIComponent(pathname.slice('/api/orders/'.length)));
+    return;
+  }
+
+  if (pathname === '/api/pay/notify') {
+    if (req.method !== 'POST') return httpError(res, 405, 'METHOD_NOT_ALLOWED');
+    await handleNotify(req, res);
+    return;
+  }
+
+  if (pathname === '/api/pay/return') {
+    if (req.method !== 'GET') return httpError(res, 405, 'METHOD_NOT_ALLOWED');
+    handlePayReturn(res, new URL(req.url, 'http://localhost'));
+    return;
+  }
+
+  if (pathname === '/api/practices') {
+    if (req.method !== 'GET') return httpError(res, 405, 'METHOD_NOT_ALLOWED');
+    await handlePractices(req, res, new URL(req.url, 'http://localhost'));
     return;
   }
 
@@ -1036,6 +1349,14 @@ const server = http.createServer(async (req, res) => {
   }
 
   await handleStatic(req, res);
+});
+
+db.init(DB_URL).then(function (ok) {
+  if (ok) {
+    console.log('  账号：PostgreSQL 已连接，支付与权益可用');
+  } else {
+    console.log('  账号：数据库未连接（' + (db.status().error || '未配置 db.url') + '），按免费模式运行');
+  }
 });
 
 server.listen(PORT, HOST, () => {

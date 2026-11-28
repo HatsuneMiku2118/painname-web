@@ -9,8 +9,12 @@
     "data:check": "node tools/build-data.mjs --check",
     "data:fields": "node tools/import-feishu.mjs --fields",
     "data:export": "node tools/build-data.mjs --export",
+    "db:check": "node tools/db-check.mjs",
     "eval:kb": "python eval/build_kb.py",
     "eval:build": "python eval/build_scenarios.py",
     "eval:run": "python eval/run_eval.py"
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
   }
 }

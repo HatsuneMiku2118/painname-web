@@ -134,8 +134,38 @@ function json3(data) {
   return JSON.stringify(data, null, 2);
 }
 
+/**
+ * 免费投影：前端只拿到「每个概念的第一个方向 + 该方向第一张练习」。
+ * 完整方向与练习留在 data/concepts.json，由服务端在权益校验后下发。
+ */
+function freeProjection(data) {
+  const next = JSON.parse(JSON.stringify(data));
+  const full = next.directions || {};
+  const keep = {};
+  (next.concepts || []).forEach((c) => {
+    const ids = Array.isArray(c.directions) ? c.directions : [];
+    const first = ids[0] || 'd_general';
+    if (full[first]) keep[first] = true;
+  });
+  if (full.d_general) keep.d_general = true;
+
+  const projected = {};
+  Object.keys(keep).forEach((id) => {
+    const d = full[id];
+    if (!d) return;
+    projected[id] = {
+      id: d.id,
+      title: d.title,
+      description: d.description,
+      tasks: Array.isArray(d.tasks) ? d.tasks.slice(0, 1) : []
+    };
+  });
+  next.directions = projected;
+  return next;
+}
+
 function buildWeb(data) {
-  return WEB_BANNER + json3(data) + ';\n';
+  return WEB_BANNER + json3(freeProjection(data)) + ';\n';
 }
 
 function normalizeEol(text) {
