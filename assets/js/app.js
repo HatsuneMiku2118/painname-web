@@ -582,10 +582,10 @@
 
   function renderResonancePage(concept, u) {
     const excerpt = clip(String(State.record.raw || '').replace(/\s+/g, ' '), 46);
-    // 概念库里没有 scene 字段，这里按 engine 的取法回落到 indicators[0]，
-    // 否则每个概念的共振句都会渲染出字面量 undefined。
-    const scene = concept.scene || (concept.indicators || [])[0] || '';
-    const sentence = '你提到「' + excerpt + '」。' + scene;
+    // 概念库没有 scene 字段：优先用一句话释义 plain，其次指标句，最后适用情境，
+    // 都缺时只留用户原文，避免渲染出字面量 undefined。
+    const paraphrase = concept.plain || (concept.indicators || [])[0] || (concept.applicable || [])[0] || '';
+    const sentence = '你提到「' + excerpt + '」。' + paraphrase;
 
     viewEl.innerHTML =
       '<div class="page-head">' +
