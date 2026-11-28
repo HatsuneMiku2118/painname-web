@@ -16,3 +16,7 @@ __pycache__/
 
 # 分享用的打包产物
 share/
+
+# 版权受限的原始语料（论文全文、场景标注源），仅本地评测使用，不入库
+eval/kb.sqlite
+eval/scenarios.jsonl
